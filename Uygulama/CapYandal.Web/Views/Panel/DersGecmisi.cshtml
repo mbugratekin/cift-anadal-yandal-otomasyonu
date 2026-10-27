@@ -1,0 +1,40 @@
+﻿@model IReadOnlyList<KeyValuePair<string,CapYandal.Web.Models.DersPanelListesi>>
+@using CapYandal.Web.Data.Entities
+@using CapYandal.Web.Models
+@using CapYandal.Web.Security
+@using System.Globalization
+@{
+    ViewData["Title"]="Not Takibi";
+    var coordinator = User.IsInRole(UygulamaRolleri.Koordinator);
+    var active = Model.LastOrDefault(p => p.Value.Onayli && !p.Value.GecmisAktarimiMi &&
+        p.Value.Denemeler is { Count: > 0 } grades && grades.Any(g => g.SurumNo == 0 || g.OnayDurumu is KayitOnayDurumu.OnayBekliyor or KayitOnayDurumu.Reddedildi));
+    var activePeriodId = active.Value?.DonemId;
+}
+<section class="panel-content">
+    <h1>Not Takibi</h1>
+    @if(coordinator) { <p><a class="student-back" asp-action="DersNotTakibi">Öğrenci listesine geri dön</a></p> }
+    @if(User.IsInRole(UygulamaRolleri.Ogrenci) && !Model.Any(p => p.Value.Denemeler?.Any(g => g.Duzenlenebilir) == true)) {
+        <p role="status">Not girişi, önceki dönemlerin onaylanmış ders listelerinde açılır. İçinde bulunduğunuz dönemin notları henüz girilemez; onaylanmış notlar değiştirilemez.</p>
+    }
+    @if(active.Value is { } current) {
+        <section class="course-grade-current"><h2>@active.Key</h2>
+            <partial name="_DersDenemeleri" model="new DersDenemePaneli(current.ProgramId,current.DonemId,coordinator,current.Denemeler??[],current.Kalemler)" />
+        </section>
+    }
+    <div class="course-grade-history">
+    @foreach(var period in Model.Where(p => p.Value.DonemId != activePeriodId).Reverse()) {
+        <section><h2>@period.Key</h2>
+        <partial name="_DersDenemeleri" model="new CapYandal.Web.Models.DersDenemePaneli(period.Value.ProgramId,period.Value.DonemId,User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator),period.Value.Denemeler??[],period.Value.Kalemler)" />
+        </section>
+    }
+    @if(Model.Count==0) {<p>Henüz ders kaydı yok.</p>}
+    @if(ViewData["DersIlerlemesi"] is CapYandal.Web.Models.DersIlerlemeModeli progress) {
+        <table class="program-information course-history-totals"><caption class="visually-hidden">Tamamlanan ve kalan ders toplamları</caption><thead><tr><th>Durum</th><th>Ders sayısı</th><th>Kredi</th><th>AKTS</th></tr></thead><tbody>
+        <tr><th scope="row">Tamamlanan</th><td>@progress.TamamlananSayisi</td><td>@(progress.TamamlananKredi?.ToString("0.##",CultureInfo.GetCultureInfo("tr-TR")) ?? "Belirsiz")</td><td>@(progress.TamamlananAkts?.ToString("0.##",CultureInfo.GetCultureInfo("tr-TR")) ?? "Belirsiz")</td></tr>
+        <tr><th scope="row">Henüz tamamlanmayan</th><td>@progress.KalanSayisi</td><td>@(progress.KalanKredi?.ToString("0.##",CultureInfo.GetCultureInfo("tr-TR")) ?? "Belirsiz")</td><td>@(progress.KalanAkts?.ToString("0.##",CultureInfo.GetCultureInfo("tr-TR")) ?? "Belirsiz")</td></tr>
+        </tbody></table>
+    }
+    </div>
+    @if(User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator) && ViewData["GecmisProgramId"] is Guid historyProgram) { <partial name="_GecmisDersAktarimi" model="historyProgram" /> }
+</section>
+@section Scripts {<script src="~/js/ders-denemesi.js" asp-append-version="true" defer></script><script src="~/js/gecmis-ders-aktarimi.js" asp-append-version="true" defer></script>}

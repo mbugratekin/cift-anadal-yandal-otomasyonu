@@ -1,0 +1,12 @@
+@model CapYandal.Web.Models.KisiselEpostaDogrulamaModel
+@{ ViewData["Title"] = "Kişisel e-posta doğrulama"; }
+<section class="account-box" aria-labelledby="kisisel-eposta-basligi">
+    <h1 id="kisisel-eposta-basligi">Kişisel e-posta doğrulama</h1>
+    <p><strong>@Model.Adres</strong> adresini iletişim ve parola kurtarma adresiniz olarak doğrulayın.</p>
+    <form asp-action="KisiselEpostaDogrula" method="post">
+        <input asp-for="UserId" type="hidden" />
+        <input asp-for="RequestId" type="hidden" />
+        <input asp-for="Token" type="hidden" />
+        <button type="submit" class="primary-button">E-posta adresimi doğrula</button>
+    </form>
+</section>

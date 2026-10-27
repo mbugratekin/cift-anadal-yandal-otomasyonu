@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="72" viewBox="0 0 48 72">
+  <defs>
+    <g id="selcuk-yildizi" fill="none" stroke="#dbe3e4" stroke-width="1" stroke-linejoin="round">
+    <polygon points="24,0 31.03,7.03 40.97,7.03 40.97,16.97 48,24 40.97,31.03 40.97,40.97 31.03,40.97 24,48 16.97,40.97 7.03,40.97 7.03,31.03 0,24 7.03,16.97 7.03,7.03 16.97,7.03"/>
+    <polygon points="24,9.6 28.22,13.82 34.18,13.82 34.18,19.78 38.4,24 34.18,28.22 34.18,34.18 28.22,34.18 24,38.4 19.78,34.18 13.82,34.18 13.82,28.22 9.6,24 13.82,19.78 13.82,13.82 19.78,13.82"/>
+    </g>
+  </defs>
+  <use href="#selcuk-yildizi" x="-24" y="-42"/>
+  <use href="#selcuk-yildizi" x="24" y="-42"/>
+  <use href="#selcuk-yildizi" y="-6"/>
+  <use href="#selcuk-yildizi" x="-24" y="30"/>
+  <use href="#selcuk-yildizi" x="24" y="30"/>
+  <use href="#selcuk-yildizi" y="66"/>
+</svg>

@@ -1,0 +1,12 @@
+@model CapYandal.Web.Models.GorusmeBilgisiModel
+@{
+    var location = Model.Blok + (string.IsNullOrWhiteSpace(Model.Oda) ? "" : " - Oda " + Model.Oda);
+    var text = string.Join("\n", new[] { location }.Concat(Model.Araliklar.Select(x => x.Metin.Replace(" ", ": ", StringComparison.Ordinal))));
+}
+<form method="post" asp-controller="Gorusme" asp-action="Kaydet" class="meeting-form staff-meeting-form" data-version="@Model.Surum">
+    <label class="visually-hidden" for="meeting-text">Blok, oda ve görüşme gün-saatleri</label>
+    <textarea id="meeting-text" name="GorusmeMetni" rows="4" maxlength="2000" placeholder="A Blok - Oda 204&#10;Salı: 14.00–16.00&#10;Çarşamba: 12.00–13.30" spellcheck="false">@text</textarea>
+    <div class="meeting-actions" hidden><button type="submit" class="text-button">Kaydet</button><button type="button" class="text-button meeting-cancel">Vazgeç</button></div>
+    <p class="meeting-message" role="status" aria-live="polite"></p>
+    <noscript>Görüşme bilgilerini düzenlemek için JavaScript etkin olmalıdır.</noscript>
+</form>

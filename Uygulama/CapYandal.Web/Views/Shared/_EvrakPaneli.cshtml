@@ -1,0 +1,85 @@
+@model CapYandal.Web.Models.EvrakBaglamModel
+@using CapYandal.Web.Data.Entities
+@using CapYandal.Web.Services.Belgeler
+@{ var headingId = "evrak-panel-" + Guid.NewGuid().ToString("N"); }
+<section class="panel-workspace documents-workspace evrak-panel" aria-labelledby="@headingId">
+    <h3 id="@headingId" class="archive-period-heading">@Model.Donem</h3>
+    @if(Model.Dosyalar.Count > 0) {
+        var documents=Model.Dosyalar.GroupBy(x=>x.SeriId ?? x.Id).SelectMany(g=>g.OrderByDescending(x=>x.GuncelMi).ThenByDescending(x=>x.YuklemeAni)).ToArray();
+        <div class="profile-table-scroll"><table class="program-information">
+            <thead><tr><th>Dosya</th><th>Tür</th><th>Yüklenme tarihi</th><th>Durum</th><th>İşlem</th></tr></thead>
+            <tbody>@foreach(var document in documents) {
+                <tr data-evrak-row="@document.Id" class="@(document.GuncelMi ? "" : "archive-previous-version")">
+                    <th scope="row"><span data-evrak-name>@SunumGorunumu.BelgeAdi(document.Ad)</span></th>
+                    <td>@BelgeArsivKurali.TurAdi(document.Tur)</td>
+                    <td class="document-upload-date"><time datetime="@document.YuklemeAni.ToString("O")">@document.YuklemeAni.ToOffset(TimeSpan.FromHours(3)).ToString("dd.MM.yyyy HH:mm")</time></td>
+                    <td>@if(!document.GuncelMi) { <small>Önceki sürüm</small> } @BelgeArsivKurali.DurumAdi(document.Onay) @if(SunumGorunumu.GerekceMetni(document.Gerekce) is { } reason) { <p>@reason</p> } @if(!document.Mevcut) { <small>@document.Durum</small> }</td>
+                    <td><div class="archive-inline-actions">
+                        @if(document.Mevcut) { <a class="text-button archive-download" href="@($"/kisisel-belgeler/{document.Id:D}/indir")">İndir</a> }
+                        @if(Model.Inceleyebilir && document.Mevcut && document.GuncelMi) {
+                            @if(document.Onay == BelgeOnayDurumu.OnayBekliyor) {
+                                <button type="button" class="archive-approve" data-archive-decision="2" data-target="review-@document.Id">Onayla</button>
+                                <button type="button" class="archive-reject" data-archive-decision="3" data-target="review-@document.Id">Reddet</button>
+                            } else if(document.Onay != BelgeOnayDurumu.IptalEdildi) { <button type="button" data-archive-decision="" data-target="review-@document.Id">Kararı değiştir</button> }
+                        }
+                        @if(!Model.Inceleyebilir && Model.Yuklenebilir && document.GuncelMi && document.SeriId is not null && document.Tur is not null &&
+                            (!document.OgrenciKilidi && document.Onay is not (BelgeOnayDurumu.Onaylandi or BelgeOnayDurumu.IptalEdildi))) {
+                            <button type="button" class="archive-new-version" data-archive-upload data-series="@document.SeriId" data-request="@document.IstekId" data-type="@((int)document.Tur.Value)"
+                                data-reason="@(document.OgrenciKilidi || document.Onay is BelgeOnayDurumu.Onaylandi or BelgeOnayDurumu.IptalEdildi ? "true" : "false")">Yeni sürüm yükle</button>
+                        }
+                    </div></td>
+                </tr>
+                @if(Model.Inceleyebilir && document.Mevcut && document.GuncelMi) {
+                    <tr id="review-@document.Id" class="document-review-row" hidden><td colspan="5">
+                        <form class="belge-review-form" asp-controller="BelgeInceleme" asp-action="Karar" method="post">
+                            <input type="hidden" name="ProgramId" value="@Model.ProgramId" /><input type="hidden" name="BelgeId" value="@document.Id" /><input type="hidden" name="Surum" value="@document.Surum" />
+                            <label>Karar<select name="Karar" required><option value="">Karar seçin</option><option value="2">Onayla</option><option value="3">Reddet</option><option value="4">İptal et</option></select></label>
+                            <label>Gerekçe<textarea name="Gerekce" rows="1" maxlength="2000"></textarea></label>
+                            <button type="submit" class="text-button">Kararı kaydet</button><button type="button" class="text-button" data-archive-cancel>Vazgeç</button><p role="status"></p>
+                        </form>
+                    </td></tr>
+                }
+            }</tbody>
+        </table></div>
+
+    }
+    @if(Model.Dosyalar.Count == 0) {
+        <div class="profile-table-scroll"><table class="program-information">
+            <thead><tr><th>Dosya</th><th>Tür</th><th>Yüklenme tarihi</th><th>Durum</th><th>İşlem</th></tr></thead>
+            <tbody><tr><td colspan="5">Bu dönem için henüz belge yok.</td></tr></tbody>
+        </table></div>
+    }
+    <div class="archive-inline-actions archive-period-actions">
+        @if(Model.Yuklenebilir && Model.DonemId is not null) { <button type="button" data-archive-upload>@(Model.Inceleyebilir ? "Belge gönder" : "Belge yükle")</button> }
+        @if(Model.Inceleyebilir && Model.DonemId is not null) { <button type="button" data-archive-request>Belge iste</button> }
+    </div>
+    @if(Model.Istekler.Count > 0) {
+        <h3>Belge istekleri</h3>
+        @foreach(var request in Model.Istekler) {
+            <div><strong>@BelgeArsivKurali.TurAdi(request.Tur)</strong> | @request.Durum<p>@SunumGorunumu.GerekceMetni(request.Metin)</p>
+                @if(SunumGorunumu.GerekceMetni(request.Gerekce) is { } requestReason) { <p>@requestReason</p> }
+                @if(Model.Yuklenebilir && (Model.Inceleyebilir || !request.OgrenciKilidi && request.DurumKodu is EkBelgeIstegiDurumu.Bekliyor or EkBelgeIstegiDurumu.Yuklendi or EkBelgeIstegiDurumu.Reddedildi)) {
+                    <button type="button" class="text-button" data-archive-upload data-request="@request.Id" data-type="@((int)request.Tur)" data-reason="@(request.OgrenciKilidi ? "true" : "false")">Yanıt yükle</button>
+                }
+            </div>
+        }
+    }
+    @if(Model.Inceleyebilir && Model.DonemId is { } requestPeriod) {
+        <div class="archive-editor archive-request-editor" hidden><form class="belge-request-form" asp-controller="BelgeInceleme" asp-action="Iste" method="post">
+            <input type="hidden" name="IstekId" value="@Guid.NewGuid()" /><input type="hidden" name="ProgramId" value="@Model.ProgramId" /><input type="hidden" name="DonemId" value="@requestPeriod" />
+            <partial name="_BelgeTurSecimi" model='@($"{headingId}-request-type")' />
+            <label>Açıklama (isteğe bağlı)<textarea name="Metin" rows="1" maxlength="2000"></textarea></label><button type="submit" class="text-button">İste</button><button type="button" class="text-button" data-archive-cancel>Vazgeç</button><p role="status"></p>
+        </form></div>
+    }
+    @if(Model.Yuklenebilir && Model.DonemId is { } uploadPeriod) {
+        <div class="archive-editor archive-upload-editor" hidden><form class="general-document-form evrak-upload-form" asp-controller="Evrak" asp-action="Yukle" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="ProgramId" value="@Model.ProgramId" /><input type="hidden" name="DonemId" value="@uploadPeriod" />
+            <input type="hidden" name="SeriId" /><input type="hidden" name="IstekId" />
+            @if(Model.ListeId is { } list) { <input type="hidden" name="ListeId" value="@list" /> }
+            <partial name="_BelgeTurSecimi" model='@($"{headingId}-new-type")' />
+            <partial name="_EvrakDosyaSec" model='@($"{headingId}-new-file")' />
+            <label class="archive-renewal-reason" hidden>Düzeltme gerekçesi<textarea name="Gerekce" rows="1" maxlength="2000"></textarea></label>
+            <button type="submit" class="document-upload">@(Model.Inceleyebilir ? "Gönder" : "Yükle")</button><button type="button" class="text-button" data-archive-cancel>Vazgeç</button><p role="status" data-evrak-upload-message></p>
+        </form></div>
+    }
+</section>

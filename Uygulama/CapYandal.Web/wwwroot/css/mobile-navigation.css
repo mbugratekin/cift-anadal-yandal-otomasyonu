@@ -1,0 +1,47 @@
+.panel-mobile-toggle{display:none}
+.course-grade-table-scroll{max-width:100%;overflow-x:auto}
+.course-grade-table-scroll>.course-grades{min-width:880px}
+.course-grade-current,.course-grade-history,.course-grade-history>section{min-width:0;max-width:100%}
+@media(min-width:1051px){
+ .panel-header .panel-brand{flex:0 0 6.5rem}
+ .panel-header .panel-emblem{width:5.5rem;max-height:5.5rem}
+ .panel-header .panel-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;flex:0 1 auto;width:max-content;max-width:calc(100% - 6.5rem);overflow-x:auto}
+ .panel-header .panel-tabs li{flex:0 0 auto;min-width:0}
+ .panel-header .panel-tab{width:100%;min-width:5.25rem;max-width:none;padding:.65rem .65rem}
+ .panel-header .panel-tab>span{overflow-wrap:normal}
+}
+@media(max-width:1050px){
+ .panel-header{position:relative;z-index:10}
+ .panel-header .panel-topbar{display:flex;flex-wrap:nowrap;gap:8px;padding:10px;min-height:64px}
+ .panel-header .panel-system-title{flex:1 1 auto;font-size:clamp(10px,3vw,13px);min-width:0;line-height:1.5;overflow-wrap:normal}
+ .panel-header .panel-system-title span{display:block;white-space:nowrap}.panel-header .panel-system-title span:first-child{font-size:clamp(9px,2.55vw,13px)}
+ .panel-header .panel-account{flex:0 0 auto;margin:0}
+ .panel-header .panel-account-toggle{padding:0;gap:0;width:30px;height:30px;box-sizing:border-box}
+ .panel-header .panel-account-toggle strong,.panel-header .account-chevron{display:none}
+ .panel-header .account-photo{width:30px;height:30px;box-sizing:border-box;object-fit:cover;border-radius:0}
+ .panel-header .panel-account-menu{position:absolute;right:0;left:auto;max-width:calc(100vw - 24px);z-index:32}
+ .mobile-nav-ready .panel-mobile-toggle{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;padding:4px;background:#153165;color:white;border:1px solid #ffc700;cursor:pointer}
+ .panel-mobile-toggle svg{width:20px;height:18px}
+ .panel-mobile-toggle:focus-visible{outline:2px solid #ffc700;outline-offset:2px}
+ .panel-header .panel-nav{display:flex;flex-direction:column;min-height:0;border-top:2px solid #ffc700;background:#fff}
+ .mobile-nav-ready .panel-nav{position:fixed;top:var(--panel-mobile-top,86px);bottom:0;left:0;right:0;height:calc(100dvh - var(--panel-mobile-top,86px));max-height:none;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 5px 10px #0002;padding-bottom:env(safe-area-inset-bottom)}
+ .mobile-nav-open .panel-topbar{position:fixed;top:0;left:0;right:0;z-index:31}
+ .mobile-menu-page-open,.mobile-menu-page-open body{overflow:hidden}
+ .mobile-nav-ready:not(.mobile-nav-open) .panel-nav{display:none}
+ .panel-header .panel-nav::after{display:none}
+ .panel-header .panel-brand{flex:0 0 auto;width:100%;height:76px;border-right:0;border-bottom:1px solid #ddd;padding:8px}
+ .panel-header .panel-emblem{height:58px;width:58px}
+ .panel-header .panel-tabs{display:flex;flex-direction:column;flex:0 0 auto;overflow:visible;min-width:0}
+ .panel-header .panel-tabs li{display:flex;flex:0 0 auto;min-width:0;position:relative}
+ .panel-header .panel-tab{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-width:0;max-width:none;min-height:48px;padding:11px 18px;border:0;border-bottom:1px solid #ddd;color:#153165;font-size:15px;text-align:left;background:#fff}
+ .panel-header .panel-tab.is-active{background:#fff7df;color:#153165;border-left:4px solid #ffc700;padding-left:14px}
+ .panel-header .panel-tab.is-active::before,.panel-header .panel-tab.is-active::after{display:none}
+ .panel-header .panel-tab-chat{padding-bottom:11px}
+ .panel-header .sohbet-bildirim{position:static;margin:auto 14px auto 0;align-self:center;color:#153165}
+}
+.archive-workspace .archive-detail,.archive-workspace .archive-student-content{min-width:0;max-width:100%}
+.archive-workspace .evrak-panel>.profile-table-scroll,.archive-workspace .evrak-panel .document-history>.profile-table-scroll{overflow-x:auto;max-width:100%}
+.archive-workspace .evrak-panel .profile-table-scroll>.program-information{min-width:780px;table-layout:fixed}
+.archive-workspace .evrak-panel .profile-table-scroll>.program-information th:first-child{width:32%}
+.archive-workspace .evrak-panel .profile-table-scroll>.program-information th:nth-child(2){width:20%}
+.archive-workspace .evrak-panel .profile-table-scroll>.program-information th:nth-child(3){width:34%}

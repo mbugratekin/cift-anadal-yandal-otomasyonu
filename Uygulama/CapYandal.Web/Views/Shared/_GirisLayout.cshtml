@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Çift Anadal / Yan Dal Otomasyonu</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="login-page">
+    <a class="skip-link" href="#ana-icerik">İçeriğe geç</a>
+    <main id="ana-icerik" class="login-main" tabindex="-1">
+        @RenderBody()
+    </main>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/parola-alani.js" asp-append-version="true" defer></script>
+</body>
+</html>

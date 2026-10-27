@@ -1,0 +1,133 @@
+@model CapYandal.Web.Models.PanelModel
+@{ ViewData["Title"] = Model.Baslik; }
+<section class="panel-content" aria-labelledby="panel-basligi">
+    <h1 id="panel-basligi" class="visually-hidden">Ana Sayfa</h1>
+    @if (Model.DonemIzinleri is not null) { <partial name="_DonemIzinleri" model="Model.DonemIzinleri" /> }
+    @if (TempData["Basari"] is string message)
+    {
+        <p class="success-notice" role="status">@message</p>
+    }
+    @if (Model.OgrenciMi)
+    {
+        <section class="student-profile" aria-label="Öğrenci ve program bilgileri">
+            <div class="student-photo-area">
+                @if (Model.FotografVarMi)
+                {
+                    <img class="student-photo" src="@Url.Action("Fotograf", "Profil")" alt="Profil fotoğrafınız" />
+                }
+                else
+                {
+                    <form asp-controller="Profil" asp-action="FotografOnayla" method="post" enctype="multipart/form-data" id="photo-form">
+                        <input type="file" name="fotograf" id="photo-input" accept=".jpg,.jpeg,.png" class="visually-hidden" tabindex="-1" />
+                        <button type="button" id="photo-select" class="student-photo-select" aria-label="Biyometrik fotoğraf seç">
+                            <img id="photo-placeholder" src="~/images/profil-siluet.svg" asp-append-version="true" alt="" width="120" height="160" />
+                            <img id="photo-preview" class="student-photo" alt="Seçilen fotoğrafın önizlemesi" hidden />
+                            <span id="photo-select-label">Son 6 ay içinde çekilmiş biyometrik standartlara uygun bir fotoğrafınızı yükleyin.</span>
+                        </button>
+                        <div id="photo-confirmation" hidden>
+                            <label class="photo-consent"><input type="checkbox" name="onay" value="true" required /> Seçtiğim fotoğrafı tekrar değiştiremeyeceğimi biliyorum.</label>
+                            <button type="submit" class="photo-confirm-button">Fotoğrafı Onayla</button>
+                        </div>
+                        <p id="photo-error" class="photo-error" role="alert"></p>
+                    </form>
+                    @if (TempData["FotografHatasi"] is string photoError)
+                    {
+                        <p class="photo-error" role="alert">@photoError</p>
+                    }
+                }
+            </div>
+            <dl class="student-information">
+                <dt>Öğrenci No</dt><dd class="student-number-cell">@(Model.OgrenciNo ?? "—")</dd>
+                <dt>Adı Soyadı</dt><dd>@Model.KullaniciAdi</dd>
+                <dt>Öğrenci E-postası</dt><dd>@(Model.KurumsalEposta ?? "—")</dd>
+                <dt>Kişisel E-posta</dt><dd>
+                    <form id="personal-email-form" asp-controller="Hesap" asp-action="KisiselEpostaKaydet" method="post" novalidate>
+                        <label for="personal-email" class="visually-hidden">Kişisel e-posta</label>
+                        <input id="personal-email" name="KisiselEposta" type="email" maxlength="256" value="@Model.KisiselEposta" placeholder="Kişisel e-posta adresiniz" autocomplete="email" aria-describedby="personal-email-status" />
+                        <span id="personal-email-status" class="visually-hidden" role="status" aria-live="polite"></span>
+                        <small id="personal-email-verification">@(Model.KisiselEposta is not null && !Model.KisiselEpostaDogrulandiMi ? "Doğrulanmadı" : "")</small>
+                        <noscript><button type="submit" class="text-button" formaction="@Url.Action("Kurulum", "Hesap")">Kaydet</button></noscript>
+                    </form>
+                </dd>
+            </dl>
+        </section>
+        <section class="panel-workspace student-programs" aria-labelledby="programlar-basligi">
+            <h2 id="programlar-basligi">Program Bilgileri</h2>
+            <div class="profile-table-scroll">
+                <table class="program-information">
+                    <thead><tr><th scope="col">Program</th><th scope="col">Ana Dal</th></tr></thead>
+                    <tbody>
+                    @foreach (var program in Model.Programlar)
+                    {
+                        <tr><td>@program.Tur</td><td>@program.KaynakAnaDal</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="student-profile staff-profile" aria-label="Personel bilgileri">
+            <div class="student-photo-area">
+                <img class="student-photo staff-photo-placeholder" src="~/images/profil-siluet.svg" asp-append-version="true" alt="Profil fotoğrafı henüz yüklenmedi" width="120" height="160" />
+            </div>
+            <dl class="student-information">
+                <dt>Adı Soyadı</dt><dd>@Model.KullaniciAdi</dd>
+                <dt>E-posta</dt><dd>@(Model.KurumsalEposta ?? "—")</dd>
+                <dt>Görüşme Bilgileri</dt>
+                <dd class="staff-meeting-cell">
+                    @if (Model.KendiGorusmeBilgisi is null)
+                    {
+                        <span>Henüz belirtilmedi.</span>
+                    }
+                    else if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+                    {
+                        <partial name="_GorusmeYonetimi" model="Model.KendiGorusmeBilgisi" />
+                    }
+                    else
+                    {
+                        var gorusme = Model.KendiGorusmeBilgisi;
+                        var konum = string.Join(" - ", new[] { gorusme.Blok, string.IsNullOrWhiteSpace(gorusme.Oda) ? null : "Oda " + gorusme.Oda }.Where(x => !string.IsNullOrWhiteSpace(x)));
+                        @if (!string.IsNullOrWhiteSpace(konum)) { <div>@konum</div> }
+                        @foreach (var aralik in gorusme.Araliklar) { <div>@aralik.Metin</div> }
+                        @if (string.IsNullOrWhiteSpace(konum) && gorusme.Araliklar.Count == 0) { <span>Henüz belirtilmedi.</span> }
+                    }
+                </dd>
+            </dl>
+        </section>
+        @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator) && Model.KendiGorusmeBilgisi is not null)
+        {
+            <script src="~/js/gorusme.js" asp-append-version="true" defer></script>
+        }
+    }
+    @if (Model.OgrenciMi)
+    {
+        <section class="panel-workspace student-programs" aria-labelledby="gano-history-heading">
+            <h2 id="gano-history-heading">GANO Geçmişi</h2>
+            @if (Model.GanoOkumaHatasi is not null) { <p role="alert">@Model.GanoOkumaHatasi</p> }
+            <div class="profile-table-scroll"><table class="program-information">
+                <thead><tr><th scope="col">Dönem</th><th scope="col">Ana Dal GANO</th><th scope="col">ÇAP / Yan Dal GANO</th></tr></thead>
+                <tbody>
+                @foreach (var period in Model.GanoGorunumu.GroupBy(row => new { row.Yil, row.Yariyil }))
+                {
+                    <tr><td>@(period.Key.Yariyil == "Bahar" ? period.Key.Yil + 1 : period.Key.Yil) @period.Key.Yariyil</td>
+                    <td>@foreach (var row in period.Where(row => row.Kapsam == CapYandal.Web.Data.Entities.GanoKapsami.AnaDal)) { <partial name="_GanoDeger" model="row" /> }
+                        @if (!period.Any(row => row.Kapsam == CapYandal.Web.Data.Entities.GanoKapsami.AnaDal)) { <span>—</span> }</td>
+                    <td>@foreach (var row in period.Where(row => row.Kapsam != CapYandal.Web.Data.Entities.GanoKapsami.AnaDal)) { <div><span>@(row.Kapsam == CapYandal.Web.Data.Entities.GanoKapsami.Cap ? "ÇAP" : "Yan Dal"): </span><partial name="_GanoDeger" model="row" /></div> }
+                        @if (!period.Any(row => row.Kapsam != CapYandal.Web.Data.Entities.GanoKapsami.AnaDal)) { <span>—</span> }</td></tr>
+                }
+                @if (Model.GanoGorunumu.Count == 0 && Model.GanoOkumaHatasi is null) { <tr><td colspan="3">Henüz GANO kaydı yok.</td></tr> }
+                </tbody>
+            </table></div>
+            <ul class="gano-legend"><li><span class="gano-dot normal"></span>Devam koşulu sağlanıyor</li><li><span class="gano-dot warning"></span>Düşük GANO uyarısı</li><li><span class="gano-dot violation"></span>Koşul ihlali</li><li><span class="gano-dot neutral"></span>Değerlendirme yok, devre dışı veya belirsiz</li></ul>
+        </section>
+        @if(ViewData["DersIlerlemesi"] is CapYandal.Web.Models.DersIlerlemeModeli progress) { <partial name="_DersIlerlemesi" model="progress" /><p><a asp-action="DersGecmisi">Ders notları ve geçmiş</a></p> }
+        @if(ViewData["KosulProgramId"] is Guid kosulProgram && kosulProgram != Guid.Empty && ViewData["KosulDonemId"] is Guid kosulDonem) {
+            <section class="numeric-check" data-program-id="@kosulProgram" data-period-id="@kosulDonem" data-read-url="@Url.Action("Oku", "SayisalKosul")" aria-label="Akademik koşul sonuçları">
+                <h2>Akademik Koşul Sonuçları</h2><partial name="_SayisalKosulSonuclari" />
+            </section>
+            <script src="~/js/sayisal-kosullar.js" asp-append-version="true" defer></script>
+        }
+    }
+</section>

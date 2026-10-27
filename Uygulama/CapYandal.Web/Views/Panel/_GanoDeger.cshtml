@@ -1,0 +1,3 @@
+@model CapYandal.Web.Models.GanoGorunumSatiri
+@using System.Globalization
+<span class="gano-value @Model.RenkSinifi" title="@Model.Durum" aria-label="@($"GANO {Model.Gano.ToString("0.00", CultureInfo.GetCultureInfo("tr-TR"))}; {Model.Durum}")">@Model.Gano.ToString("0.00", CultureInfo.GetCultureInfo("tr-TR"))</span>

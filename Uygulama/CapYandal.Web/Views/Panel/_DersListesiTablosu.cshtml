@@ -1,0 +1,8 @@
+@model CapYandal.Web.Models.DersTabloModel
+<div class="profile-table-scroll course-list-scroll"><table class="program-information course-table">
+    <thead><tr><th scope="col">Ders Kodu / Ders Türü</th><th scope="col">Ders Adı</th><th scope="col">Kredi</th><th scope="col">AKTS</th><th scope="col">Yarıyıl</th>@if(Model.Sonuc) { <th scope="col">Durum</th> }@if(Model.KararFormu is not null) { <th scope="col">Düzeltme iste</th> }</tr></thead>
+    <tbody class="course-selected">@foreach (var row in Model.Satirlar) {
+        var durum = Model.DuzeltilecekDersler is { Count: > 0 } requests ? requests.Contains(row.DersId) ? "Değiştirilmeli" : "Değişiklik istenmedi" : Model.DurumMetni;
+        <partial name="_DersSatiri" model="new CapYandal.Web.Models.DersSatirModel(row, Model.Duzenlenebilir, Model.Onayli, Model.Sonuc, durum, Model.KararFormu)" />
+    }</tbody>
+</table></div>

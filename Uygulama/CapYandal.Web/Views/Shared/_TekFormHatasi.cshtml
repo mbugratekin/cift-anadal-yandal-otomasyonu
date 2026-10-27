@@ -1,0 +1,9 @@
+@{
+    var error = new[] { "MevcutParola", "YeniParola", "YeniParolaTekrar" }
+        .SelectMany(key => ViewData.ModelState.TryGetValue(key, out var state) ? state.Errors.AsEnumerable() : Enumerable.Empty<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError>())
+        .FirstOrDefault() ?? ViewData.ModelState.Values.SelectMany(x => x.Errors).FirstOrDefault();
+}
+@if(error is not null)
+{
+    <p class="single-form-error" role="alert">@(string.IsNullOrWhiteSpace(error.ErrorMessage) ? "Bilgileri kontrol edip yeniden deneyin." : error.ErrorMessage)</p>
+}

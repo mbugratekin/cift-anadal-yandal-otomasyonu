@@ -1,0 +1,34 @@
+@model Guid
+@using CapYandal.Web.Data.Entities
+@using CapYandal.Web.Services.DersKaydi
+<section class="gecmis-aktarim student-action-section" aria-label="Geçmiş ders ve notlar" data-options-url="@Url.Action("Secenekler", "GecmisDersAktarim", new { programId = Model })" data-prepare-url="@Url.Action("Hazirla", "GecmisDersAktarim")">
+    <button type="button" class="primary-button history-import-open" aria-expanded="false" aria-controls="aktarim-@Model">Geçmiş ders ve notlar</button>
+    <div id="aktarim-@Model" class="history-import-body" hidden>
+    <p class="muted">Geçmiş ders ve notları transkripte göre ekleyin; muaf derslerde Muaf seçin.</p>
+    <form method="post" asp-controller="GecmisDersAktarim" asp-action="Kaydet" class="gecmis-aktarim-form">
+        <input type="hidden" name="ProgramId" value="@Model" />
+        <input type="hidden" name="ProgramSurum" /><input type="hidden" name="SablonSurum" /><input type="hidden" name="DonemSurum" />
+        <label>Eklemek istediğiniz geçmiş dönemi seçin<select name="DonemId" required disabled></select></label>
+        <div class="profile-table-scroll"><table class="program-information import-table">
+            <thead><tr><th scope="col">Ders</th><th scope="col">Not</th><th scope="col">Ders durumu</th><th scope="col">Geçilen dönem</th><th scope="col">İşlem</th></tr></thead>
+            <tbody class="gecmis-aktarim-satirlari"></tbody>
+        </table></div>
+        <button type="button" class="primary-button gecmis-satir-ekle" disabled>Ders ekle</button>
+        <label>Kaynak / dayanak<input name="Gerekce" maxlength="500" required placeholder="Transkript veya öğrenci işleri kaydı" /></label>
+        <button type="submit" class="primary-button" disabled>Geçmiş kayıtları aktar</button>
+        <p class="gecmis-aktarim-mesaji" role="alert"></p>
+    </form>
+    <button type="button" class="text-button history-import-close">Vazgeç</button>
+    </div>
+    <template class="gecmis-aktarim-satir">
+        <tr>
+            <td><select data-field="DersId" aria-label="Katalog dersi" required></select></td>
+            <td><div class="grade-note-fields"><input data-field="SayisalNot" type="number" min="0" max="100" step="0.01" placeholder="Sayı (varsa)" aria-label="Sayısal not (varsa)" /><select data-field="Not" aria-label="Harf notu"><option value="">Harf</option>@foreach(var grade in HarfNotuKurali.Guncel.Concat(new[]{"DD","FD"})) { <option value="@grade">@grade</option> }</select></div></td>
+            <td><select data-field="Durum" aria-label="Ders durumu">
+                @foreach(var state in Enum.GetValues<DersDenemeDurumu>()) { <option value="@((int)state)" selected="@(state == DersDenemeDurumu.Alindi)">@DersDenemeEtiketleri.Durum(state)</option> }
+            </select></td>
+            <td><select data-field="GecilenDonemId" aria-label="Geçilen dönem" disabled></select></td>
+            <td><button type="button" class="text-button gecmis-satir-cikar" aria-label="Taslak satırı çıkar">−</button></td>
+        </tr>
+    </template>
+</section>

@@ -1,0 +1,22 @@
+@model CapYandal.Web.Models.ParolaDegistirModel
+@{ ViewData["Title"] = "Parola değiştir"; }
+<section class="account-box" aria-labelledby="parola-basligi">
+    <h1 id="parola-basligi">Parola değiştir</h1>
+    <p>Yeni parola 8–20 karakter arasında olmalı; büyük ve küçük harf, rakam ve özel karakter içermelidir.</p>
+    <form asp-action="ParolaDegistir" method="post" class="password-change-form" novalidate>
+        <partial name="_TekFormHatasi" />
+        <div class="form-field">
+            <label asp-for="MevcutParola"></label>
+            <input asp-for="MevcutParola" autocomplete="current-password" />
+        </div>
+        <div class="form-field">
+            <label asp-for="YeniParola"></label>
+            <input asp-for="YeniParola" autocomplete="new-password" />
+        </div>
+        <div class="form-field">
+            <label asp-for="YeniParolaTekrar"></label>
+            <input asp-for="YeniParolaTekrar" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="primary-button">Parolayı değiştir</button>
+    </form>
+</section>

@@ -1,0 +1,19 @@
+@model CapYandal.Web.Models.HesapKurulumModel
+@{ ViewData["Title"] = "Kişisel e-posta"; }
+<section class="account-box" aria-labelledby="kurulum-basligi">
+    <h1 id="kurulum-basligi">Kişisel e-posta</h1>
+    <p>İletişim için kişisel e-posta adresinizi girin. Adresinizi kaydettikten sonra doğrulamayı beklemeden uygulamayı kullanabilirsiniz. Şifre sıfırlama bağlantıları okul e-postanıza gönderilir.</p>
+    @if (TempData["Basari"] is string message)
+    {
+        <p class="success-notice" role="status">@message</p>
+    }
+    <form asp-action="Kurulum" method="post">
+        <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+        <div class="form-field">
+            <label asp-for="KisiselEposta"></label>
+            <input asp-for="KisiselEposta" type="email" autocomplete="email" />
+        </div>
+        <p>Adresinizi yanlış yazdıysanız düzelterek yeniden gönderebilirsiniz. Yeni bağlantı öncekinin yerini alır.</p>
+        <button type="submit" class="primary-button">Adresi kaydet</button>
+    </form>
+</section>

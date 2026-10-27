@@ -1,0 +1,97 @@
+@model CapYandal.Web.Models.PanelModel
+@{ var chat = Model.SohbetPaneli!; ViewData["Title"] = "Sohbet"; var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"); }
+@{
+    var dersTalebi = Model.OgrenciMi && string.Equals(Context.Request.Query["dersTalebi"].ToString(), "true", StringComparison.OrdinalIgnoreCase);
+}
+<link rel="stylesheet" href="~/css/sohbet.css" asp-append-version="true" />
+<section class="panel-content chat-workspace" aria-labelledby="sohbet-basligi">
+    <h1 id="sohbet-basligi" class="visually-hidden">Sohbet</h1>
+    @if (chat.KoordinatorMi && Model.KendiGorusmeBilgisi is not null)
+    {
+        <section class="chat-own-meeting" aria-label="Görüşme bilgileri">
+            @{ var person = Model.KendiGorusmeBilgisi; }
+            <form method="post" asp-controller="Gorusme" asp-action="Kaydet" class="meeting-form staff-meeting-form chat-meeting-header staff-meeting-strip" data-version="@person.Surum">
+                <div class="chat-meeting-person"><img class="meeting-avatar" src="~/images/profil-siluet.svg" asp-append-version="true" alt="" />
+                    <div><strong>@person.AdSoyad</strong>
+                    <label class="visually-hidden" for="meeting-email">İletişim e-postası</label>
+                    <input id="meeting-email" name="IletisimEpostasi" type="email" maxlength="254" value="@person.IletisimEpostasi" placeholder="İletişim e-postası" />
+                    <label class="visually-hidden" for="meeting-location">Görüşme yeri</label>
+                    <input id="meeting-location" name="GorusmeKonumu" maxlength="163" value="@(person.Blok + (string.IsNullOrWhiteSpace(person.Oda) ? "" : " - Oda " + person.Oda))" placeholder="Görüşme yeri" /></div>
+                </div>
+                <div class="chat-hours"><label for="meeting-text"><strong>Görüşme Saatleri</strong></label>
+                    <textarea id="meeting-text" name="GorusmeMetni" rows="3" maxlength="2000" placeholder="Salı: 14.00–16.00" spellcheck="false">@string.Join("\n",person.Araliklar.Select(x=>x.Metin.Replace(" ",": ",StringComparison.Ordinal)))</textarea>
+                </div>
+                <div class="meeting-actions" hidden><button type="submit" class="text-button">Kaydet</button><button type="button" class="text-button meeting-cancel">Vazgeç</button></div>
+                <p class="meeting-message" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+    }
+    <div class="chat-layout @(chat.KoordinatorMi ? "with-sidebar" : null)">
+    @if(chat.KoordinatorMi)
+    {
+        var unreadOnly = string.Equals(Context.Request.Query["okunmamis"].ToString(), "true", StringComparison.OrdinalIgnoreCase);
+        <aside class="chat-sidebar" aria-label="Öğrenci konuşmaları" data-unread-only="@unreadOnly.ToString().ToLowerInvariant()">
+            <label class="visually-hidden" for="chat-student-search">Öğrenci ara</label>
+            <input id="chat-student-search" type="search" placeholder="Ad veya öğrenci no ara" autocomplete="off" />
+            <div class="chat-list-filters" aria-label="Konuşma filtresi"><button type="button" data-unread-filter="false" aria-pressed="@(!unreadOnly ? "true" : "false")">Tümü</button><button type="button" data-unread-filter="true" aria-pressed="@(unreadOnly ? "true" : "false")">Okunmamış</button></div>
+            <nav class="chat-student-list" aria-label="Öğrenciler">
+                @foreach(var student in chat.Ogrenciler)
+                {
+                    <a class="chat-person" data-search="@student.Ad" data-unread="@student.Okunmamis" asp-controller="Panel" asp-action="Sohbet" asp-route-ogrenciId="@student.Id" asp-route-okunmamis="@(unreadOnly ? "true" : null)" aria-current="@(chat.OgrenciId == student.Id ? "page" : null)" hidden="@(unreadOnly && student.Okunmamis == 0)">
+                        <img class="chat-person-avatar" src="@(student.FotografVar ? Url.Action("OgrenciFotografi", "Panel", new { id = student.ProgramId }) : Url.Content("~/images/profil-siluet.svg"))" alt="" /><span>@student.Ad</span>
+                        @if(student.Okunmamis > 0) { <span class="chat-person-count" aria-label="@student.Okunmamis okunmamış mesaj">@student.Okunmamis</span> }
+                    </a>
+                }
+            </nav>
+            <p class="chat-list-empty" role="status" hidden></p>
+        </aside>
+    }
+    <div class="chat-main @(chat.OgrenciId.HasValue ? null : "chat-unselected")">
+    @if(chat.OgrenciId.HasValue)
+    {
+        @if(dersTalebi) { <partial name="_DersTalebi" /> }
+        <div class="chat-conversation">
+        @if(!chat.KoordinatorMi)
+        {
+            <header class="chat-meeting-header" aria-label="Koordinatör görüşme bilgileri">
+                @foreach(var person in Model.GorusmeBilgileri)
+                {
+                    <div class="chat-meeting-person"><img class="meeting-avatar" src="~/images/profil-siluet.svg" asp-append-version="true" alt="" /><div><strong>@person.AdSoyad</strong>
+                        @if(!string.IsNullOrWhiteSpace(person.IletisimEpostasi)) { <p class="chat-email">@person.IletisimEpostasi</p> }
+                        <p>@person.Blok @(string.IsNullOrWhiteSpace(person.Oda) ? "" : "- Oda " + person.Oda)</p>
+                    </div></div>
+                    <div class="chat-hours"><strong>Görüşme Saatleri</strong>@foreach(var range in person.Araliklar) { <div>@range.Metin</div> }
+                        @if(person.Araliklar.Count == 0) { <div>Henüz belirtilmedi.</div> }</div>
+                }
+                @if(Model.GorusmeBilgileri.Count == 0) { <p>Koordinatör görüşme bilgisi henüz belirtilmedi.</p> }
+            </header>
+        }
+        <div class="chat-messages" aria-label="Mesajlar" tabindex="0" data-student-id="@chat.OgrenciId" data-coordinator="@chat.KoordinatorMi.ToString().ToLowerInvariant()" data-current-page="@chat.Sayfa" data-url="@Url.Action("Mesajlar", "Sohbet", new { ogrenciId = chat.OgrenciId, sayfa = chat.Sayfa })">
+            @foreach(var message in chat.Mesajlar)
+            {
+                <partial name="_SohbetMesaji" model="message" />
+            }
+            @if(chat.Mesajlar.Count == 0) { <p class="chat-empty">Henüz mesaj yok.</p> }
+        </div>
+        <form method="post" asp-controller="Sohbet" asp-action="Gonder" enctype="multipart/form-data" class="chat-compose" data-read-url="@Url.Action("Okundu","Sohbet")">
+            <input type="hidden" name="IstekId" value="@Guid.NewGuid()" /><input type="hidden" name="OgrenciId" value="@chat.OgrenciId" />
+            <label class="chat-text-field"><span class="visually-hidden">Mesaj</span><textarea name="Metin" rows="1" maxlength="2000" placeholder="Mesajınızı yazın…"></textarea></label>
+            <label class="chat-attach" title="Dosya ekle"><span class="visually-hidden">Dosya eki</span><svg viewBox="0 0 32 32" aria-hidden="true"><path class="chat-upload-arrow" d="M16 5 7 14h6v8h6v-8h6Z"/><path class="chat-upload-tray" d="M6 22v5h20v-5"/></svg><input class="visually-hidden" type="file" name="Ek" accept=".pdf,.docx" /></label>
+            <button type="submit" class="chat-send" aria-label="Gönder" title="Gönder"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 28 4 20 28 15 22 11 28 10 18Z" fill="#153165" stroke="#153165"/><path d="m10 18 18-14-13 18-4 6" fill="none" stroke="#fff"/><path d="m15 22 5 6" fill="none" stroke="#fff"/></svg></button>
+            <output class="chat-attachment-name" aria-live="polite"></output>
+            <button type="button" class="chat-attachment-remove text-button" hidden>Dosyayı kaldır</button>
+            <output class="chat-send-status" aria-live="polite"></output>
+            <p class="chat-error" role="alert"></p>
+        </form>
+        </div>
+        <div class="chat-pagination">@if(chat.EskiSayfaVar) { <a asp-action="Sohbet" asp-route-ogrenciId="@chat.OgrenciId" asp-route-sayfa="@(chat.Sayfa + 1)">Önceki mesajlar</a> } @if(chat.Sayfa > 0) { <a asp-action="Sohbet" asp-route-ogrenciId="@chat.OgrenciId" asp-route-sayfa="@(chat.Sayfa - 1)">Yeni mesajlar</a> }</div>
+    }
+    </div></div>
+</section>
+@section Scripts {
+    <script src="~/js/sohbet.js" asp-append-version="true" defer></script><script src="~/js/ders-talebi.js" asp-append-version="true" defer></script>
+    @if (chat.KoordinatorMi && Model.KendiGorusmeBilgisi is not null)
+    {
+        <script src="~/js/gorusme.js" asp-append-version="true" defer></script>
+    }
+}

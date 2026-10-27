@@ -1,0 +1,85 @@
+@model CapYandal.Web.Models.DersDenemePaneli
+@using CapYandal.Web.Data.Entities
+@using CapYandal.Web.Services.DersKaydi
+@{ var hasActions = Model.Satirlar.Any(r => r.Duzenlenebilir); }
+@if(Model.Satirlar.Count > 0)
+{
+    <section aria-label="Ders notları ve denemeleri">
+    <div class="course-grade-table-scroll" role="region" aria-label="Ders notları tablosu" tabindex="0">
+    <table class="program-information course-grades">
+        <thead><tr><th scope="col">Ders kodu / adı</th><th scope="col">Kredi</th><th scope="col">AKTS</th><th scope="col">Not</th><th scope="col">Ders durumu</th><th scope="col">Onay</th>@if(hasActions) { <th scope="col">İşlem</th> }</tr></thead>
+        <tbody>
+        @foreach(var row in Model.Satirlar)
+        {
+            var formId = "not-" + row.KalemId.ToString("N");
+            var course = Model.Dersler?.FirstOrDefault(x => x.Kod == row.Kod);
+            <tr class="grade-row">
+                <td><span class="course-code">@row.Kod</span>@row.Ad</td>
+                <td>@(course?.Kredi?.ToString("0.##") ?? "—")</td><td>@(course?.Akts.ToString("0.##") ?? "—")</td>
+                <td>
+                    @if(row.Duzenlenebilir) {
+                        <div class="grade-note-fields">
+                        <input name="SayisalNot" form="@formId" type="number" min="0" max="100" step="0.01" value="@row.SayisalNot?.ToString(System.Globalization.CultureInfo.InvariantCulture)" readonly="@Model.Koordinator" placeholder="Sayı" aria-label="@($"{row.Kod} sayısal notu (varsa)")" />
+                        <select name="Not" form="@formId" required="@(!Model.Koordinator)" disabled="@Model.Koordinator" aria-label="@($"{row.Kod} harf notu")">
+                            <option value="">Harf</option>
+                            @foreach(var grade in HarfNotuKurali.Guncel.Concat(row.Not is "DD" or "FD" ? new[]{row.Not!} : Array.Empty<string>())) { <option value="@grade" selected="@(row.Not == grade)">@grade</option> }
+                        </select></div>
+                    }
+                    else { <span>@(row.Not ?? "—")</span> @if(row.SayisalNot.HasValue) { <small class="grade-numeric-note">@row.SayisalNot.Value.ToString("0.##")</small> } }
+                </td>
+                <td>
+                    <span class="grade-state-text @(row.Durum == DersDenemeDurumu.Kaldi ? "grade-state-failed" : row.Durum == DersDenemeDurumu.Gecti ? "grade-state-passed" : null)" hidden="@(Model.Koordinator && row.Duzenlenebilir && row.OnayDurumu == KayitOnayDurumu.OnayBekliyor)">@(row.SurumNo == 0 ? "Not bekleniyor" : DersDenemeEtiketleri.Durum(row.Durum))</span>
+                    @if(row.Durum == DersDenemeDurumu.Gecti && row.GecilenDonemId != Model.DonemId && row.Gecmis.FirstOrDefault(g => g.SurumNo == row.SurumNo)?.GecilenDonem is { } passedPeriod) {
+                        <small class="grade-passed-period">Geçilen dönem: @passedPeriod</small>
+                    }
+                    @if(row.Duzenlenebilir && Model.Koordinator) {
+                        <select name="Durum" form="@formId" hidden="@(row.OnayDurumu != KayitOnayDurumu.OnayBekliyor)" aria-label="@($"{row.Kod} ders durumu")">
+                            @foreach(var state in Enum.GetValues<DersDenemeDurumu>().Where(state => state is not (DersDenemeDurumu.Planlandi or DersDenemeDurumu.Cikarildi) || state == row.Durum)) { <option value="@((int)state)" selected="@(row.Durum == state)">@DersDenemeEtiketleri.Durum(state)</option> }
+                        </select>
+                    }
+                </td>
+                <td class="@(row.SurumNo > 0 && row.OnayDurumu == KayitOnayDurumu.Onaylandi ? "grade-approved" : row.OnayDurumu == KayitOnayDurumu.Reddedildi ? "grade-rejected" : null)">@if(row.SurumNo > 0 && row.OnayDurumu == KayitOnayDurumu.Onaylandi) { <span class="grade-approval-mark" role="img" aria-label="Onaylandı" title="Onaylandı">✓</span> } else { @(row.SurumNo == 0 ? "Not girilmedi" : DersDenemeEtiketleri.Onay(row.OnayDurumu)) }
+                    @if(row.OnayDurumu is KayitOnayDurumu.Reddedildi or KayitOnayDurumu.IptalEdildi && row.Gecmis.FirstOrDefault(g=>g.SurumNo==row.SurumNo)?.Gerekce is {Length:>0} gradeReason) { <small class="grade-decision-reason">@gradeReason</small> }
+                </td>
+                @if(hasActions) { <td>
+                @if(row.Duzenlenebilir) {
+                    <form id="@formId" method="post" asp-controller="DersDeneme" asp-action="Kaydet" class="ders-deneme-form" data-coordinator="@Model.Koordinator.ToString().ToLowerInvariant()" data-reason-required="@(Model.Koordinator ? "true" : "false")">
+                        <input type="hidden" name="ProgramId" value="@Model.ProgramId" /><input type="hidden" name="DonemId" value="@Model.DonemId" />
+                        <input type="hidden" name="DersSecimKalemiId" value="@row.KalemId" /><input type="hidden" name="DenemeId" value="@row.DenemeId" />
+                        <input type="hidden" name="BeklenenSurum" value="@row.SurumNo" />
+                        <input type="hidden" name="OnayDurumu" value="@((int)(Model.Koordinator ? row.SurumNo == 0 ? KayitOnayDurumu.Onaylandi : row.OnayDurumu : KayitOnayDurumu.OnayBekliyor))" />
+                        @if(Model.Koordinator) {
+                            <input type="hidden" name="GecilenDonemId" value="@(row.GecilenDonemId ?? Model.DonemId)" disabled="@(row.Durum != DersDenemeDurumu.Gecti)" />
+                            <button type="button" class="text-button grade-edit">Düzenle</button>
+                            <button type="submit" class="text-button grade-save" hidden>Kaydet</button>
+                            <button type="button" class="text-button grade-cancel" hidden>Vazgeç</button>
+                            @if(row.SurumNo > 0 && row.OnayDurumu == KayitOnayDurumu.OnayBekliyor) {
+                                <button type="submit" class="text-button" data-grade-decision="2">Onayla</button>
+                                <button type="submit" class="text-button" data-grade-decision="3">Reddet</button>
+                            }
+                            <textarea name="Gerekce" rows="1" maxlength="2000" placeholder="Değişiklik gerekçesi" aria-label="@($"{row.Kod} değişiklik gerekçesi")" hidden class="auto-grow-field"></textarea>
+                        } else {
+                            <input type="hidden" name="Durum" value="2" /><button type="submit" class="text-button grade-send">Koordinatöre gönder</button>
+                        }
+                        <p class="ders-deneme-mesaji" role="alert"></p>
+                    </form>
+                } else { <span>—</span> }
+                </td> }
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+    @if(Model.Satirlar.Any(r=>r.Gecmis.Any(g=>g.SurumNo < r.SurumNo))) {
+        <details class="grade-revision-history"><summary>Not değişiklikleri</summary><ul>
+        @foreach(var row in Model.Satirlar) {
+            @foreach(var previous in row.Gecmis.Where(g=>g.SurumNo < row.SurumNo).OrderByDescending(g=>g.SurumNo)) {
+                <li>@row.Kod | @row.Ad | @previous.Ani.ToOffset(TimeSpan.FromHours(3)).ToString("dd.MM.yyyy HH:mm") | Not: @(previous.Not ?? "—") @(previous.SayisalNot.HasValue ? $"({previous.SayisalNot:0.##})" : "") | @DersDenemeEtiketleri.Durum(previous.Durum) | @DersDenemeEtiketleri.Onay(previous.OnayDurumu)
+                    @if(previous.GecilenDonem is not null) { <span> | Geçilen dönem: @previous.GecilenDonem</span> }
+                    @if(CapYandal.Web.Models.SunumGorunumu.GerekceMetni(previous.Gerekce) is { } gecmisMetni) { <span> | @gecmisMetni</span> }
+                </li>
+            }
+        }</ul></details>
+    }
+    </section>
+}

@@ -1,0 +1,29 @@
+# Derleme ve yerel IDE dosyaları
+**/bin/
+**/obj/
+.vs/
+**/.vs/
+*.user
+*.suo
+
+# Yerel çalışma, yedek ve denetim çıktıları
+Yedekler/
+output/
+tmp/
+_Codex_Inceleme/
+.codex/
+.playwright-cli/
+
+# Sırlar, sertifikalar ve yerel yapılandırma
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/secrets.json
+*.pfx
+*.p12
+*.key
+
+# Gelecekteki özel evrak deposu
+**/App_Data/

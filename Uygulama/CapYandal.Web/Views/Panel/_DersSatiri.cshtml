@@ -1,0 +1,10 @@
+@model CapYandal.Web.Models.DersSatirModel
+@using System.Globalization
+@{ var d = Model.Ders; var culture = CultureInfo.GetCultureInfo("tr-TR"); var tur = d.Tur switch { 1 => "Teknik seçmeli", 2 => "Sosyal seçmeli", 3 => "Zorunlu", _ => "Bilgi yok" }; }
+<tr data-ders-id="@d.DersId" data-akts="@d.Akts.ToString(CultureInfo.InvariantCulture)" data-kredi="@d.Kredi?.ToString(CultureInfo.InvariantCulture)" data-semester-band="@(d.Yariyil is null ? "" : d.Yariyil % 2 == 1 ? "odd" : "even")" class="@(Model.Sonuc ? Model.Onayli ? "course-approved" : Model.DurumMetni == "Reddedildi" ? "course-rejected" : "course-pending" : "")">
+    <td><span class="course-code">@d.Kod</span> <span>@tur</span>@if(Model.Duzenlenebilir) { <input type="hidden" name="Dersler" value="@d.DersId" /> }</td>
+    <td><div class="course-name"><span>@d.Ad</span></div></td>
+    <td>@(d.Kredi?.ToString("0.##", culture) ?? "—")</td><td>@d.Akts.ToString("0.##", culture)</td><td>@(d.Yariyil?.ToString() ?? "—")</td>
+    @if (Model.Sonuc) { <td class="course-row-status">@(Model.DurumMetni ?? (Model.Onayli ? "Onaylandı" : "Onay bekliyor"))</td> }
+    @if (Model.KararFormu is not null) { <td><input type="checkbox" form="@Model.KararFormu" name="DuzeltilecekDersler" value="@d.DersId" aria-label="@($"{d.Kod} {d.Ad} için düzeltme iste")" /></td> }
+</tr>

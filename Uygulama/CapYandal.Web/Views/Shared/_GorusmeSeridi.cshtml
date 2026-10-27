@@ -1,0 +1,13 @@
+@model CapYandal.Web.Models.GorusmeBilgisiModel
+<header class="chat-meeting-header" aria-label="Koordinatör görüşme bilgileri">
+    <div class="chat-meeting-person"><img class="meeting-avatar" src="~/images/profil-siluet.svg" asp-append-version="true" alt="" />
+        <div><strong>@Model.AdSoyad</strong>
+            @if(!string.IsNullOrWhiteSpace(Model.IletisimEpostasi)) { <p class="chat-email">@Model.IletisimEpostasi</p> }
+            <p data-meeting-location>@Model.Blok @(string.IsNullOrWhiteSpace(Model.Oda) ? "" : "- Oda " + Model.Oda)</p>
+        </div>
+    </div>
+    <div class="chat-hours"><strong>Görüşme Saatleri</strong><div data-meeting-hours>
+        @foreach(var range in Model.Araliklar) { <div>@range.Metin</div> }
+        @if(Model.Araliklar.Count == 0) { <div>Henüz belirtilmedi.</div> }
+    </div></div>
+</header>

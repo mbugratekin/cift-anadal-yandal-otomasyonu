@@ -1,0 +1,44 @@
+@model CapYandal.Web.Models.GirisModel
+@{
+    ViewData["Title"] = "Giriş";
+    Layout = "_GirisLayout";
+}
+<section class="login-card" aria-labelledby="giris-basligi">
+    <div class="login-logo">
+        <div class="login-logo-art login-logo-lined">
+            <img class="login-logo-emblem" src="~/images/selcuk-logo-obis-cizgili.png" asp-append-version="true" alt="Selçuk Üniversitesi" />
+            <img class="login-logo-wordmark" src="~/images/selcuk-logo-obis-cizgili.png" asp-append-version="true" alt="" aria-hidden="true" />
+        </div>
+    </div>
+    <p class="login-department">Bilgisayar Mühendisliği</p>
+    <h1 id="giris-basligi">Çift Anadal / Yan Dal Otomasyonu</h1>
+    @if (TempData["Basari"] is string basariMesaji)
+    {
+        <p class="success-notice" role="status">@basariMesaji</p>
+    }
+    <form asp-action="Giris" method="post">
+        <input asp-for="DonusAdresi" type="hidden" />
+        @if(ViewData.ModelState[string.Empty]?.Errors.Count > 0) { <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div> }
+        <div class="form-field">
+            <label asp-for="KullaniciAdi" class="visually-hidden"></label>
+            <input asp-for="KullaniciAdi" placeholder="Kullanıcı adı" autocomplete="username" autocapitalize="none" spellcheck="false" aria-describedby="ogrenci-giris-notu" />
+            <svg class="login-input-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="7" r="4.5" fill="currentColor" />
+                <path d="M3 21v-3c0-3.4 3.2-6 9-6s9 2.6 9 6v3H3Z" fill="currentColor" />
+            </svg>
+            <span asp-validation-for="KullaniciAdi" class="field-error" role="alert"></span>
+        </div>
+        <div class="form-field">
+            <label asp-for="Parola" class="visually-hidden"></label>
+            <input asp-for="Parola" placeholder="Şifre" autocomplete="@(Context.Request.Query["yeniParola"] == "true" ? "new-password" : "current-password")" data-clear-password="@(Context.Request.Query["yeniParola"] == "true" ? "true" : null)" />
+            <svg class="login-input-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="16.5" cy="7.5" r="4.5" fill="none" stroke="currentColor" stroke-width="3" />
+                <path d="m13 11-9 9m2-2 2 2m1-5 2 2" fill="none" stroke="currentColor" stroke-width="3.5" />
+            </svg>
+        </div>
+        <button type="submit" class="login-button">GİRİŞ</button>
+    </form>
+    <p class="account-links"><a asp-action="SifremiUnuttum">Şifremi unuttum</a></p>
+    <p id="ogrenci-giris-notu" class="login-student-note">Öğrenciler, kullanıcı adı alanına öğrenci numaralarını girmelidir.</p>
+</section>
+@section Scripts { <script src="~/js/giris.js" asp-append-version="true" defer></script> }

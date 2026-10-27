@@ -1,0 +1,12 @@
+@model CapYandal.Web.Models.SohbetMesajModel
+@{ var local = TimeZoneInfo.ConvertTime(Model.Ani,TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")); }
+<article class="chat-message @(Model.BenimMi ? "is-own" : "")" data-message-id="@Model.Id" tabindex="0" aria-label="@Model.Gonderen">
+    @if(!Model.BenimMi) { <strong class="chat-sender">@Model.Gonderen</strong> }
+    @if(!string.IsNullOrEmpty(Model.Metin)) { <p>@CapYandal.Web.Models.SunumGorunumu.SohbetMetni(Model.Metin)</p> }
+    @if(Model.Ek is { } attachment) {
+        var pdf = System.IO.Path.GetExtension(attachment.DosyaAdi).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+        <a asp-controller="Sohbet" asp-action="Ek" asp-route-id="@attachment.Id" asp-route-onizle="@(pdf ? "true" : null)" target="@(pdf ? "_blank" : null)" rel="noopener" class="chat-attachment-link">@attachment.DosyaAdi (@((attachment.BoyutBayt / 1024m).ToString("0.#")) KB)@(pdf ? " · Önizle" : "")</a>
+        @if(pdf) { <a asp-controller="Sohbet" asp-action="Ek" asp-route-id="@attachment.Id" class="chat-attachment-link">İndir</a> }
+    }
+    <time datetime="@Model.Ani.ToString("O")"><span>@local.ToString("d MMMM",System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))</span><span>@local.ToString("HH.mm")</span></time>
+</article>

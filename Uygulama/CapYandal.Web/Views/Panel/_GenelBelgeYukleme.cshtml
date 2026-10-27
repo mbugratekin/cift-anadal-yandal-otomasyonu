@@ -1,0 +1,32 @@
+@model CapYandal.Web.Models.GenelBelgeYuklemeModel
+@{ var alan = "belge-" + Guid.NewGuid().ToString("N"); }
+<form class="general-document-form" asp-controller="GenelBelgeYukleme" asp-action="Yukle" method="post" enctype="multipart/form-data">
+    @if (Model.GenelBelgeId is { } id)
+    {
+        <input type="hidden" name="genelBelgeId" value="@id" />
+        <input type="hidden" name="surum" value="@Model.Surum" />
+    }
+    @if (Model.KategoriSec)
+    {
+        <label class="general-document-kind">Belge türü
+            <select name="tur" required aria-label="Belge türü">
+                <option value="Ders kayıt formları">Ders kayıt belgeleri</option>
+                <option value="Ders kayıt rehberi">Ders kayıt rehberi</option>
+                <option value="Protokoller">Protokoller</option>
+            </select>
+        </label>
+    }
+    else { <input type="hidden" name="tur" value="@Model.Tur" /> }
+    @if(Model.KategoriSec || Model.Tur == "Protokoller") {
+        <label class="protocol-title" hidden="@(Model.Tur != "Protokoller")">Program / kaynak bölüm<input name="protokolAdi" maxlength="180" placeholder="Örn. ÇAP Elektrik-Elektronik" required="@(Model.Tur == "Protokoller")" /></label>
+    }
+    <div class="general-document-picker">
+        <label class="general-document-file" for="@alan">
+            <span>@(Model.GenelBelgeId is null ? "Yeni Belge" : "Yenile")</span>
+            <input id="@alan" name="file" type="file" accept=".pdf,.docx" required aria-label="PDF veya Word dosyası seçin" />
+        </label>
+        <span class="general-document-filename"></span>
+    </div>
+    <p class="document-form-message" role="alert"></p>
+    <noscript><button type="submit" class="document-upload">Dosyayı yükle</button></noscript>
+</form>

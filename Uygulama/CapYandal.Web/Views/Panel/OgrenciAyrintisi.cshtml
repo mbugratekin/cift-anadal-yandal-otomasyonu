@@ -1,0 +1,155 @@
+@model CapYandal.Web.Models.PanelModel
+@using System.Globalization
+@{ ViewData["Title"] = "Öğrenci ayrıntısı"; var ogrenci = Model.OgrenciAyrintisi!; }
+<section class="panel-content" aria-labelledby="ayrinti-basligi">
+    <h1 id="ayrinti-basligi" class="visually-hidden">Öğrenci ayrıntısı</h1>
+    <p><a class="student-back" asp-action="Ogrenciler">Öğrenci listesine geri dön</a></p>
+    <section class="student-profile" aria-label="Öğrenci bilgileri">
+        <div class="student-photo-area">
+            @if (ogrenci.FotografVarMi)
+            {
+                <img class="student-photo" asp-append-version="false" src="@Url.Action("OgrenciFotografi", new { id = ogrenci.ProgramId })" alt="Öğrencinin profil fotoğrafı" />
+            }
+            else { <img class="student-photo" src="~/images/profil-siluet.svg" asp-append-version="true" alt="Profil fotoğrafı henüz yüklenmedi" /> }
+            @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator) && ogrenci.IlkParolaDavetineUygunMu)
+            {
+                <form class="student-invitation-form" asp-controller="OgrenciKayit" asp-action="DavetGonder" method="post">
+                    <input type="hidden" name="ogrenciNo" value="@ogrenci.OgrenciNo" />
+                    <button type="submit" class="primary-button">Davet gönder</button>
+                </form>
+            }
+        </div>
+        <dl class="student-information">
+            <dt>Öğrenci No</dt><dd class="student-number-cell">@ogrenci.OgrenciNo</dd>
+            <dt>Adı Soyadı</dt><dd>@ogrenci.AdSoyad</dd>
+            <dt>Öğrenci E-postası</dt><dd>@(ogrenci.KurumsalEposta ?? "—")</dd>
+            <dt>Kişisel E-posta</dt><dd>@ogrenci.KisiselEposta @if (ogrenci.KisiselEposta is not null && !ogrenci.KisiselEpostaOnayliMi) { <small>— Doğrulanmadı</small> }</dd>
+            <dt>Ana Dal</dt><dd>@ogrenci.AnaDal</dd>
+            <dt>Program</dt><dd>@ogrenci.Program</dd>
+            <dt>Müfredat</dt><dd>@ogrenci.Mufredat@if (!ogrenci.MufredatAktifMi && ogrenci.Mufredat != "Atanmamış") { <span> (Pasif)</span> }</dd>
+            <dt>Ders listesi</dt><dd>@ogrenci.DersListesi</dd>
+            <dt>Durum</dt><dd>@(ogrenci.AktifMi ? "Aktif" : "Pasif")</dd>
+            <dt>Kabul dönemi</dt><dd>@(ogrenci.KabulAkademikYilBaslangici is int yil && ogrenci.KabulYariyili is { } donem ? $"{yil}–{yil + 1} {(donem == CapYandal.Web.Data.Entities.AkademikYariyil.Guz ? "Güz" : "Bahar")}" : "Bilinmiyor")</dd>
+            @if (ogrenci.SonKarar is not null)
+            {
+                <dt>Koordinatör kararı</dt><dd>@CapYandal.Web.Services.Ogrenci.ProgramKararKurali.Ad(ogrenci.SonKarar)</dd>
+                <dt>Karar gerekçesi</dt><dd>@ogrenci.KararGerekcesi</dd>
+                <dt>Karar zamanı</dt><dd>@TimeZoneInfo.ConvertTimeBySystemTimeZoneId(ogrenci.KararAni!.Value, "Europe/Istanbul").ToString("dd.MM.yyyy HH:mm")</dd>
+            }
+        </dl>
+    </section>
+    <div class="student-detail-actions">
+        <a class="secondary-button" asp-action="DersGecmisi" asp-route-programId="@ogrenci.ProgramId">Not Takibi</a>
+        <a class="secondary-button" asp-action="Evrak" asp-route-programId="@ogrenci.ProgramId">Öğrenci Evraklarını Görüntüle</a>
+    </div>
+    @if (Model.DonemIzinleri is not null) { <partial name="_DonemIzinleri" model="Model.DonemIzinleri" /> }
+    @if(ViewData["DersIlerlemesi"] is CapYandal.Web.Models.DersIlerlemeModeli progress) { <partial name="_DersIlerlemesi" model="progress" /> }
+    <section class="panel-workspace student-programs program-tracking-compact" aria-labelledby="program-takibi-basligi">
+        <h2 id="program-takibi-basligi">Program Takibi</h2>
+        @if (Model.GanoOkumaHatasi is not null) { <p role="alert">@Model.GanoOkumaHatasi</p> }
+        <div class="profile-table-scroll">
+            <table class="program-information">
+                <thead><tr><th scope="col">Akademik dönem</th><th scope="col">Ana Dal GANO</th><th scope="col">@(ogrenci.Program == "Çift Anadal" ? "ÇAP GANO" : "Yan Dal GANO")</th><th scope="col">Akademik Değerlendirme</th>@if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator)) { <th scope="col">İşlem</th> }</tr></thead>
+                <tbody>
+                @foreach (var kayit in ogrenci.GanoKayitlari)
+                {
+                    var donemAdi = $"{(kayit.Yariyil == "Bahar" ? kayit.Yil + 1 : kayit.Yil)} {kayit.Yariyil}";
+                    var mainDisplay = Model.GanoGorunumu.SingleOrDefault(r => r.Yil == kayit.Yil && r.Yariyil == kayit.Yariyil && r.Kapsam == CapYandal.Web.Data.Entities.GanoKapsami.AnaDal);
+                    var programDisplay = Model.GanoGorunumu.SingleOrDefault(r => r.Yil == kayit.Yil && r.Yariyil == kayit.Yariyil && r.Kapsam != CapYandal.Web.Data.Entities.GanoKapsami.AnaDal);
+                    var degerlendirmeDisplay = (programDisplay?.Renk == CapYandal.Web.Data.Entities.GanoSonucRengi.Kirmizi ? programDisplay
+                        : mainDisplay?.Renk == CapYandal.Web.Data.Entities.GanoSonucRengi.Kirmizi ? mainDisplay
+                        : programDisplay?.Renk == CapYandal.Web.Data.Entities.GanoSonucRengi.Sari ? programDisplay
+                        : mainDisplay?.Renk == CapYandal.Web.Data.Entities.GanoSonucRengi.Sari ? mainDisplay
+                        : mainDisplay?.Renk != null ? mainDisplay
+                        : programDisplay ?? mainDisplay);
+                    var degerlendirmeMetni = degerlendirmeDisplay?.Durum ?? "—";
+                    var degerlendirmeSinifi = degerlendirmeDisplay?.RenkSinifi ?? "gano-neutral";
+                    <tr><td>@donemAdi</td><td>@if(mainDisplay is not null) { <partial name="_GanoDeger" model="mainDisplay" /> } else { @(kayit.AnaDalGano?.ToString("0.00", CultureInfo.GetCultureInfo("tr-TR")) ?? "—") }</td><td>@if(programDisplay is not null) { <partial name="_GanoDeger" model="programDisplay" /> } else { @(kayit.ProgramGano?.ToString("0.00", CultureInfo.GetCultureInfo("tr-TR")) ?? "—") }</td>
+                    <td class="academic-eval-cell @degerlendirmeSinifi">@degerlendirmeMetni</td>
+                    @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+                    {
+                        <td><button type="button" class="text-button gano-edit" data-donem="@donemAdi" data-ana="@kayit.AnaDalGano?.ToString(CultureInfo.InvariantCulture)" data-program="@kayit.ProgramGano?.ToString(CultureInfo.InvariantCulture)" data-ana-surum="@kayit.AnaDalSurum" data-program-surum="@kayit.ProgramSurum" data-ana-kaynak="@kayit.AnaDalKaynak">Düzenle</button></td>
+                    }
+                    </tr>
+                }
+                @if (ogrenci.GanoKayitlari.Count == 0) { <tr><td colspan="@(User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator) ? 5 : 4)">Henüz GANO kaydı yok.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+        {
+            <form class="gano-form academic-save-form" asp-controller="Gano" asp-action="Kaydet" method="post" data-next-period="@Model.OnerilenGanoDonemi">
+                <input type="hidden" name="ProgramId" value="@ogrenci.ProgramId" />
+                <input type="hidden" name="AnaDalSurum" /><input type="hidden" name="ProgramSurum" />
+                <div><label for="gano-donem">Akademik dönem</label><select id="gano-donem" name="Donem" required><option value="">Dönem seçin</option>
+                    @foreach(var period in ViewData["GanoDonemSecenekleri"] as string[] ?? Array.Empty<string>()) {
+                        <option value="@period" selected="@(period == Model.OnerilenGanoDonemi)">@period</option>
+                    }
+                </select></div>
+                <div><label for="gano-ana">Ana Dal GANO</label><input id="gano-ana" name="AnaDalGano" inputmode="decimal" maxlength="8" /></div>
+                <div><label for="gano-kaynak">Ana Dal GANO kaynağı</label><input id="gano-kaynak" name="AnaDalKaynak" maxlength="500" placeholder="Transkript, öğrenci işleri gibi dayanak" /></div>
+                <div><label for="gano-program">@(ogrenci.Program == "Çift Anadal" ? "ÇAP GANO" : "Yan Dal GANO")</label><input id="gano-program" name="ProgramGano" inputmode="decimal" maxlength="8" /></div>
+                <div class="gano-reason-field" hidden><label for="gano-gerekce">Düzeltme gerekçesi</label><textarea id="gano-gerekce" name="Gerekce" rows="1" maxlength="2000" placeholder="Düzeltme gerekçesi" class="auto-grow-field"></textarea></div>
+                <button type="submit" class="primary-button">GANO kaydet</button><button type="button" class="text-button gano-new" hidden>Vazgeç</button>
+                <p class="academic-message" role="status"></p>
+            </form>
+        }
+    </section>
+    @if(ViewData["KosulDonemId"] is Guid kosulDonem) {
+        <section class="numeric-check" data-program-id="@ogrenci.ProgramId" data-period-id="@kosulDonem" data-read-url="@Url.Action("Oku", "SayisalKosul")" data-check-url="@Url.Action("Kontrol", "SayisalKosul")" aria-label="Akademik koşul sonuçları">
+            <h2>Akademik Koşul Sonuçları</h2>
+            <partial name="_SayisalKosulSonuclari" />
+        </section>
+    }
+    @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+    {
+        <details class="student-management-panel" open="@(!ViewData.ModelState.IsValid)">
+        <summary>Program kararı ver</summary>
+        <section class="student-action-section" aria-label="Program kararı">
+        <p class="program-decision-help">Karardan önce gerekli belgeleri ve program koşullarını kontrol edin.</p>
+        <form class="program-decision-form" asp-controller="ProgramKarar" asp-action="Kaydet" method="post">
+            <input type="hidden" name="ProgramId" value="@ogrenci.ProgramId" />
+            <input type="hidden" name="Surum" value="@ogrenci.Surum" />
+            <input type="hidden" name="UyariSonrasiTekrar" value="false" />
+            <div class="form-field"><label class="visually-hidden" for="program-karari">Program kararı</label><select id="program-karari" name="Karar" required>
+                <option value="">Karar seçin</option>
+                @if (ogrenci.Program == "Çift Anadal") { <option value="1">Mezuniyet</option> } else { <option value="2">Sertifika</option> }
+                <option value="3">Kayıt kapatma</option>
+            </select></div>
+            <div class="form-field"><label for="karar-gerekcesi" class="visually-hidden">Gerekçe</label><textarea id="karar-gerekcesi" name="Gerekce" placeholder="Gerekçe" rows="1" maxlength="2000" required class="auto-grow-field"></textarea></div>
+            <button class="primary-button" type="submit">Kararı kaydet</button>
+            <p class="program-decision-message" role="status"></p>
+        </form>
+        </section>
+        </details>
+    }
+    @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+    {
+        <section class="program-note-area note-live" aria-label="Program takip notu">
+            <h2>Koordinatör notları</h2>
+            <form class="note-request" asp-controller="ProgramTakipNotlari" asp-action="Ekle" method="post"
+                  data-edit-url="@Url.Action("Duzenle", "ProgramTakipNotlari")" data-delete-url="@Url.Action("Sil", "ProgramTakipNotlari")">
+                <input type="hidden" name="ProgramId" value="@ogrenci.ProgramId" />
+            </form>
+            <ol class="program-note-list" aria-label="Program takip notları">
+                @foreach (var not in Model.TakipNotlari)
+                {
+                    var tarih = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(not.OlusturmaAni, "Europe/Istanbul").ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("tr-TR"));
+                    <li class="program-note-entry" data-id="@not.Id" data-version="@not.Surum">
+                        <div class="note-heading"><time datetime="@not.OlusturmaAni.ToString("O")">@tarih</time><button type="button" class="note-remove" aria-label="@tarih tarihli notu iptal et" title="Notu iptal et">−</button></div>
+                        <textarea class="note-content" rows="1" maxlength="2000" aria-label="@tarih tarihli not">@not.Metin</textarea>
+                    </li>
+                }
+            </ol>
+            <div class="note-drafts"><textarea class="program-note-input" rows="1" maxlength="2000" aria-label="Yeni program takip notu" placeholder="Takip notu yazın"></textarea></div>
+            <p class="note-error" role="status"></p>
+            <p class="note-announcement visually-hidden" role="status"></p>
+        </section>
+    }
+</section>
+@section Scripts {
+    <script src="~/js/program-notes.js" asp-append-version="true" defer></script>
+    <script src="~/js/gano.js" asp-append-version="true" defer></script>
+    <script src="~/js/program-karar.js" asp-append-version="true" defer></script>
+    <script src="~/js/sayisal-kosullar.js" asp-append-version="true" defer></script>
+}

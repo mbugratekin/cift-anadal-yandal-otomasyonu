@@ -1,0 +1,13 @@
+@model CapYandal.Web.Models.PanelModel
+@{ ViewData["Title"] = "Not Takibi"; }
+<section class="panel-content">
+    <label class="approval-student-search">Öğrenci ara<input type="search" class="grade-student-search" maxlength="128" placeholder="Öğrenci no veya ad soyad" autocomplete="off" /></label>
+    <div class="profile-table-scroll"><table class="program-information grade-student-roster">
+        <thead><tr><th>Öğrenci No</th><th>Adı Soyadı</th><th>Program</th></tr></thead>
+        <tbody>@foreach(var student in Model.Ogrenciler) {
+            <tr class="@(!student.AktifMi ? "is-passive" : "")"><td><a asp-action="DersGecmisi" asp-route-programId="@student.ProgramId">@student.OgrenciNo</a></td><td><a asp-action="DersGecmisi" asp-route-programId="@student.ProgramId">@student.AdSoyad</a></td><td>@student.Tur</td></tr>
+        }
+        <tr class="grade-student-empty" hidden="@(Model.Ogrenciler.Count > 0)"><td colspan="3">Aradığınız öğrenci kaydı bulunamadı</td></tr></tbody>
+    </table></div>
+</section>
+@section Scripts { <script src="~/js/ders-not-arama.js" asp-append-version="true" defer></script> }

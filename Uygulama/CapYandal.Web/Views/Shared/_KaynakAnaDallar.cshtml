@@ -1,0 +1,36 @@
+@using CapYandal.Web.Data.Entities
+@{ var write = User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator);
+   var items = ViewData["KaynakAnaDallar"] as IReadOnlyList<KaynakAnaDal> ?? Array.Empty<KaynakAnaDal>(); }
+<section class="source-departments" aria-labelledby="source-departments-title">
+    <div class="source-departments-heading"><h3 id="source-departments-title">ÇAP/Yan Dal İçin Öğrenci Kabul Edilen Bölümler</h3>
+    </div>
+    <div class="rule-tabs source-program-tabs" aria-label="Bölümlerin programı"><button type="button" data-source-program="1" aria-pressed="true">ÇAP</button><button type="button" data-source-program="2" aria-pressed="false">Yan Dal</button></div>
+    <label class="common-passive-toggle"><input type="checkbox" class="source-show-passive" /> Pasif bölümleri göster</label>
+    @foreach (var program in new[] { OgrenciProgramTuru.Cap, OgrenciProgramTuru.YanDal }) {
+    <div class="profile-table-scroll" data-source-panel="@((int)program)" hidden="@(program != OgrenciProgramTuru.Cap)"><table class="program-information source-departments-table">
+        <thead><tr><th>Bölüm</th>@if(write) { <th>İşlem</th> }</tr></thead>
+        <tbody>@foreach(var item in items.Where(x => x.Tur == program)) {
+            <tr data-source-program="@((int)item.Tur)" data-source-active="@(item.EtkinMi ? "true" : "false")" hidden="@(!item.EtkinMi || item.Tur != OgrenciProgramTuru.Cap)"><td>@item.Ad</td>
+            @if(write) { <td><form asp-controller="KaynakAnaDal" asp-action="Kaydet" method="post" class="source-status-form">
+                <input type="hidden" name="id" value="@item.Id" /><input type="hidden" name="tur" value="@((int)item.Tur)" />
+                <input type="hidden" name="ad" value="@item.Ad" /><input type="hidden" name="surum" value="@Convert.ToBase64String(item.RowVersion)" />
+                <input type="hidden" name="etkinMi" value="@(item.EtkinMi ? "false" : "true")" />
+                <button type="submit" class="text-button @(item.EtkinMi ? "deactivate-action" : "")">@(item.EtkinMi ? "Pasife al" : "Etkinleştir")</button>
+            </form></td> }
+            </tr>
+        }</tbody>
+    </table></div>
+    }
+    @if(write) {
+        <div class="rules-toolbar"><button type="button" class="rule-add source-add" aria-controls="source-department-editor">Bölüm ekle</button></div>
+        <form id="source-department-editor" asp-controller="KaynakAnaDal" asp-action="Kaydet" method="post" hidden>
+            <input type="hidden" name="id" /><input type="hidden" name="surum" /><input type="hidden" name="tur" value="1" />
+            <div class="source-department-fields">
+                <span class="source-selected-program">ÇAP</span>
+                <label>Bölüm adı<input name="ad" maxlength="128" required /></label>
+                <input type="hidden" name="etkinMi" value="true" />
+            </div>
+            <div class="source-department-actions"><button type="submit" class="primary-button">Kaydet</button><button type="button" class="text-button source-cancel">Vazgeç</button></div>
+        </form>
+    }
+</section>

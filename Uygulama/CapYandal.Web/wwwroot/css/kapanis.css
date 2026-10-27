@@ -1,0 +1,262 @@
+/* Son kullanıcı kabulü: mevcut Selçuk teması, kompakt ve tekrarsız alanlar. */
+.application-page .program-tracking-compact { max-width:64rem; margin-block:.8rem; }
+.application-page .program-tracking-compact .program-information :is(th,td) { padding:.35rem .6rem; font-size:.9rem; line-height:1.35; }
+.application-page .program-tracking-compact .transcript-links { margin:.4rem 0; gap:.3rem .8rem; font-size:.9rem; }
+.application-page .transcript-links:empty { display:none; }
+.application-page .course-grade-history>section { margin-bottom:2.5rem; }
+.application-page .course-grade-history>section>h2 { margin-bottom:0; }
+.application-page .program-tracking-compact .gano-form { padding:.45rem 0; align-items:end; }
+.application-page .program-tracking-compact .gano-form :is(input:not([type=hidden]),select) { box-sizing:border-box; height:38px; min-height:38px; }
+.application-page .program-tracking-compact .gano-form>button { align-self:end; box-sizing:border-box; height:38px; min-height:38px; margin:0; }
+.application-page :is(h1,h2,h3,th) { caret-color:transparent; }
+.application-page :is(h1,h2,h3) { cursor:default; }
+.application-page .common-curricula { width:52%; max-width:100%; }
+.application-page .common-curricula-heading { justify-content:flex-start; }
+.application-page .common-curricula .primary-button { width:auto; min-width:0; min-height:0; padding:.35rem .65rem; font-size:.9rem; }
+.application-page .common-curriculum-create { align-items:center; }
+.application-page .common-curriculum-create button { align-self:center; }
+.application-page .common-curriculum-list [data-curriculum-active=false] { color:#6b7280; opacity:.7; }
+.application-page .program-decision-form { align-items:center; }
+.application-page .program-decision-form .form-field { margin:0; }
+.application-page .program-decision-form .primary-button,.application-page .gano-form button { align-self:center; width:auto; min-width:0; min-height:38px; padding:.4rem .65rem; font-size:.9rem; }
+.application-page .student-action-section .program-decision-help { max-width:none; margin:.35rem 0 .6rem; }
+.application-page .program-decision-form { grid-template-columns:minmax(12rem,16rem) minmax(20rem,1fr) auto; width:100%; }
+.application-page .course-missing-note { margin:.6rem 0; }
+.application-page .gano-form select { width:100%; min-height:38px; padding:.4rem .55rem; border:1px solid #ccd6e4; background:#fff; font:inherit; }
+.application-page .period-permission-create { color:#000; }
+.application-page #donem-durumu-basligi { color:#000; }
+.application-page .course-transcript-link { width:max-content; min-width:0; padding:.35rem .65rem; font-size:.9rem; }
+.application-page .course-grade-history>section>h2,.application-page .course-grade-current>h2 { background:#153165; color:#fff; }
+.application-page .course-grades td { vertical-align:middle; }
+.application-page .grade-note-fields { display:flex; flex-wrap:wrap; gap:.3rem; align-items:center; }
+.application-page .grade-note-fields :is(input,select) { width:5.2rem; min-width:0; max-width:100%; min-height:36px; padding:.3rem; border:1px solid #bdc8d6; background:#fff; font:inherit; color:#000; }
+.application-page .grade-passed-period,.application-page .grade-numeric-note { display:block; font-size:.8rem; margin-top:.2rem; }
+.application-page .grade-revision-history td { white-space:normal; overflow-wrap:anywhere; background:#f7f9fc; font-size:.85rem; }
+.application-page .grade-revision-history ul { margin:.3rem 0; padding-left:1.2rem; }
+.application-page .approval-student-search { font-size:1rem; gap:.7rem; }
+.application-page .approval-student-search input { width:min(30rem,65vw); font:inherit; }
+.application-page .staff-meeting-form textarea { min-height:5rem; width:100%; }
+.application-page .meeting-actions { display:flex; gap:1rem; align-items:center; }
+.application-page .meeting-actions[hidden] { display:none; }
+.application-page .academic-page .academic-term-section { background:#153165; color:#fff; border:0; padding:.85rem 1rem; }
+.application-page .academic-term-section :is(h2,label,.registration-start,.registration-start output,.registration-status,.registration-clear) { color:#fff; text-align:center; }
+.application-page .academic-term-section .period-hint { color:#e2e8f0; }
+.application-page .academic-page .academic-term-section h2 { color:#fff; text-align:left; }
+.application-page .academic-page .academic-term-section .registration-start output { color:#fff; }
+.application-page .academic-term-section .registration-status { margin-top:1.25rem; align-self:center; }
+.application-page .academic-term-section .registration-status.is-open { color:#fff; }
+.application-page .academic-term-section .registration-status.is-closed { color:#ffb3b3; }
+.application-page .academic-term-section .registration-buttons .document-upload { color:#fff; border:1px solid #fff; }
+.application-page .academic-rule-editor { margin:.5rem 0 .8rem; }
+.application-page .academic-rule-editor[hidden] { display:none; }
+.application-page .academic-rule-editor .numeric-choice>select { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+.application-page .academic-rule-editor .numeric-source-row textarea { width:100%; border:0; background:#fff; font:inherit; }
+.application-page .academic-rule-editor .rule-editor-fields { grid-template-columns:1fr 1fr 2fr auto; }
+.application-page .archive-workspace .archive-editor,.application-page .archive-workspace .archive-decision-editor { margin:.5rem 0; }
+.application-page .archive-workspace .archive-editor[hidden],.application-page .archive-workspace tr[hidden] { display:none; }
+.application-page .archive-workspace .evrak-upload-form .evrak-file-picker { flex:0 1 22rem; }
+.application-page .archive-workspace .evrak-panel .document-review-row td { padding:.5rem; }
+.application-page .archive-workspace .archive-inline-actions { display:flex; flex-wrap:wrap; gap:.5rem 1rem; align-items:center; }
+.application-page .archive-workspace .archive-inline-actions button { padding:0; background:transparent; border:0; color:#153165; font:inherit; }
+@media(max-width:900px) { .application-page .common-curricula { width:100%; } .application-page .academic-rule-editor .rule-editor-fields { grid-template-columns:1fr 1fr; } }
+
+/* 21 Ekim: kullanıcı turu; normal tek renk, dar eylemler, dengeli çalışma alanı. */
+.application-page .panel-width { width:calc(100% - 2rem); max-width:none; }
+.application-page .panel-content { max-width:none; margin-inline:auto; padding-inline:clamp(.8rem,2vw,2rem); padding-bottom:3rem; }
+.application-page .chat-workspace { padding-inline:clamp(.8rem,2vw,2rem); }
+.application-page .gano-dot.normal { background:#fff; border-color:#6b7280; }
+.application-page .gano-status-note { display:block; max-width:23rem; margin-top:.2rem; font-size:.75rem; font-weight:400; color:#52657d; }
+.application-page .course-grades .grade-row>td { background:#fff; color:#000; }
+.application-page .course-grades .grade-state-failed { color:#b91c1c; font-weight:600; }
+.application-page .course-grades .grade-state-passed { color:#08742c; font-weight:600; }
+.application-page .course-grades .grade-row>td.grade-approved { background:#fff; color:#000; }
+.application-page .course-grades .grade-row>td.grade-rejected { background:#fff; color:#000; }
+.application-page .grade-decision-reason { display:block; margin-top:.25rem; color:#000; font-size:.85rem; }
+.application-page .course-transcript-link { min-height:0; width:max-content; min-width:0; padding:.25rem .5rem; line-height:1.3; }
+.application-page .student-detail-actions .transcript-links { display:contents; }
+.application-page .student-detail-actions .transcript-open { padding:.35rem .55rem; font-size:.9rem; }
+.application-page .grade-revision-history { padding:.4rem 0; font-size:.85rem; }
+.application-page .archive-workspace .evrak-panel>.archive-inline-actions { display:grid; grid-template-columns:repeat(2, max-content); gap:.5rem; margin:.5rem 0; }
+.application-page .archive-workspace .evrak-panel>.archive-inline-actions>button { box-sizing:border-box; width:7.5rem; min-height:38px; background:#153165; color:#fff; padding:.35rem .6rem; font-weight:600; }
+.application-page .archive-workspace { width:100%; max-width:none; }
+.application-page .archive-workspace .archive-detail { min-width:0; width:100%; }
+.application-page .archive-workspace .document-upload-date { width:140px; white-space:nowrap; }
+/* Belge satırında işlemler aynı ölçüde, metin taşmadan gruplanır. */
+.application-page .archive-workspace td>.archive-inline-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:1fr; position:relative; gap:0; width:100%; max-width:25rem; }
+.application-page .archive-workspace td>.archive-inline-actions>:is(button,a) { box-sizing:border-box; display:flex; align-items:center; justify-content:center; min-height:36px; padding:.35rem .5rem; margin:0; border:0; background:transparent; color:#153165; font:inherit; font-size:.85rem; text-align:center; white-space:normal; }
+.application-page .archive-workspace td>.archive-inline-actions>.archive-approve { color:#08742c; }
+.application-page .archive-workspace td>.archive-inline-actions>.archive-reject { color:#b91c1c; }
+.application-page .archive-workspace .archive-upload-editor>.evrak-upload-form { display:grid; grid-template-columns:minmax(10rem,1.2fr) minmax(15rem,2.8fr) auto auto; align-items:center; gap:.5rem; }
+.application-page .archive-workspace .archive-upload-editor>.evrak-upload-form>.form-field { min-width:0; margin:0; }
+.application-page .archive-workspace .archive-upload-editor>.evrak-upload-form>.evrak-file-picker { min-width:0; width:100%; margin:0; }
+.application-page .archive-workspace .archive-upload-editor>.evrak-upload-form>button { align-self:center; width:auto; min-width:0; padding:.35rem .55rem; }
+.application-page .archive-workspace .archive-upload-editor>.evrak-upload-form>.archive-renewal-reason { grid-column:1/-1; }
+.application-page .archive-workspace .evrak-upload-form>[role=status] { grid-column:1/-1; }
+.application-page .academic-term-section .registration-status { margin-top:0; align-self:center; }
+.application-page .academic-period-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(15rem,1fr); gap:1rem; align-items:start; }
+.application-page .academic-term-editor { border-left:1px solid #8a9ab5; padding-left:1rem; }
+.application-page .academic-term-editor form { display:flex; flex-wrap:wrap; align-items:end; gap:.6rem; }
+.application-page .academic-term-editor :is(label,p) { margin:0 0 .5rem; }
+.application-page .academic-term-editor button { width:auto; min-height:38px; padding:.35rem .6rem; }
+.application-page .registration-control .registration-row { margin-block:.4rem; align-items:center; }
+.application-page .registration-control .registration-command>label { display:flex; flex-direction:column; }
+.application-page .registration-control .registration-buttons { align-self:end; }
+.application-page :is(h1,h2,h3,th,td,dt,dd,p,span,label,legend,li,output) { caret-color:transparent; cursor:default; }
+.application-page :is(input,textarea,[contenteditable=true]) { caret-color:auto; }
+.application-page input[type=password] { direction:ltr; text-align:left; unicode-bidi:plaintext; }
+.application-page :is(a,button,summary,label:has(input[type=checkbox]),label:has(input[type=radio]),label:has(input[type=file]),[role=button]) { cursor:pointer; }
+.application-page :is(button,input,select,textarea):disabled { cursor:not-allowed; }
+.application-page .chat-own-meeting { max-width:none; }
+.application-page .chat-own-meeting .chat-meeting-header { align-items:start; }
+.application-page .chat-own-meeting #meeting-editor { flex:1; min-width:0; }
+.application-page .staff-meeting-form textarea { min-height:6.3rem; }
+@media(min-width:1100px) {
+    .application-page .course-workspace:has(.approval-roster) { display:grid; grid-template-columns:minmax(18rem,28%) minmax(0,1fr); gap:.7rem 1.2rem; align-items:start; }
+    .application-page .course-workspace:has(.approval-roster)>.approval-student-search { grid-column:1/-1; }
+    .application-page .course-workspace:has(.approval-roster)>.approval-search-message { display:none; }
+    .application-page .course-workspace:has(.approval-roster)>.profile-table-scroll { grid-column:1; grid-row:3; }
+    .application-page .course-workspace:has(.approval-roster)>.course-student-details { grid-column:2; grid-row:3; min-width:0; }
+}
+@media(max-width:900px) {
+    .application-page .academic-period-layout { grid-template-columns:1fr; }
+    .application-page .academic-term-editor { border-left:0; border-top:1px solid #8a9ab5; padding:1rem 0 0; }
+    .application-page .archive-workspace .archive-upload-editor>.evrak-upload-form { grid-template-columns:minmax(0,1fr) auto auto; }
+    .application-page .archive-workspace .archive-upload-editor>.evrak-upload-form>.form-field { grid-column:1/-1; }
+}
+
+/* Görsellerle son teyit: masaüstünde kesilmeyen tablolar ve gerçek kutu merkezleri. */
+.application-page .panel-content[aria-labelledby=ayrinti-basligi] .course-progress .course-list-scroll { max-height:none; height:auto; overflow:visible; }
+.application-page .panel-content[aria-labelledby=ayrinti-basligi] .course-progress table { width:100%; min-width:0; table-layout:fixed; }
+.application-page .panel-content[aria-labelledby=ayrinti-basligi] .course-progress :is(th,td) { white-space:normal; overflow-wrap:anywhere; }
+.application-page .panel-content[aria-labelledby=ayrinti-basligi] .course-progress :is(th,td):first-child { width:8rem; }
+.application-page .panel-content[aria-labelledby=ayrinti-basligi] .course-progress :is(th,td):nth-last-child(-n+2) { width:5rem; }
+.application-page .program-tracking-compact .program-information { width:100%; min-width:0; table-layout:auto; }
+.application-page .program-tracking-compact .program-information :is(th,td) { width:auto; white-space:nowrap; }
+.application-page .program-tracking-compact .program-information :is(th,td):nth-child(2),
+.application-page .program-tracking-compact .program-information :is(th,td):nth-child(3) { min-width:7rem; }
+.application-page .period-permission-create .period-management-form>label:has([name=Gerekce]) { flex:2 1 24rem; min-width:12rem; }
+.application-page .period-permission-create .period-management-form>label:has([name=BelgeId]) { flex:1 1 12rem; min-width:10rem; }
+.application-page .period-permission-create .period-management-form textarea { width:100%; }
+.application-page .period-permission-create .period-management-form select { max-width:100%; }
+.application-page .academic-page .academic-term-section .registration-row { align-items:flex-end; }
+.application-page .academic-page .academic-term-section .registration-row :is(input,select) { box-sizing:border-box; height:38px; min-height:38px; }
+.application-page .academic-page .academic-term-section .registration-status { display:inline-flex; align-items:center; align-self:flex-end; height:38px; margin:0; padding:0; line-height:1.2; }
+.application-page .academic-page .academic-term-section .registration-buttons { align-self:flex-end; margin:0; min-height:38px; }
+.application-page .academic-page .academic-term-section .registration-buttons button { box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; height:38px; min-height:38px; margin:0; }
+.application-page .chat-own-meeting .staff-meeting-strip { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:start; width:100%; box-sizing:border-box; margin:0; }
+.application-page .staff-meeting-strip :is(input,textarea) { background:transparent; color:#52657d; border:0; border-radius:0; box-shadow:none; font:inherit; line-height:1.6; padding:0; min-height:0; }
+.application-page .staff-meeting-strip input { width:22rem; max-width:100%; }
+.application-page .staff-meeting-strip textarea { width:17rem; max-width:100%; min-height:5rem; height:5rem; resize:none; overflow-y:auto; }
+.application-page .staff-meeting-strip :is(input,textarea):focus { outline:1px solid #8fb3ed; }
+.application-page .staff-meeting-strip .chat-meeting-person>div { display:flex; flex-direction:column; align-items:flex-start; gap:.1rem; }
+.application-page .staff-meeting-strip .meeting-actions,.application-page .staff-meeting-strip .meeting-message { flex-basis:100%; }
+@media(min-width:1100px) {
+    .application-page .course-workspace:has(.approval-roster) { grid-template-columns:minmax(28rem,34rem) minmax(0,1fr); }
+    .application-page .course-workspace:has(.approval-roster)>.profile-table-scroll { min-width:0; overflow:visible; }
+    .application-page .course-workspace .program-information.approval-roster { width:100%; min-width:0; table-layout:fixed; }
+    .application-page .course-workspace .program-information.approval-roster :is(th,td):first-child { width:43%; }
+    .application-page .course-workspace .program-information.approval-roster :is(th,td):nth-child(2) { width:40%; white-space:normal; overflow-wrap:break-word; }
+    .application-page .course-workspace .program-information.approval-roster :is(th,td):last-child { width:17%; min-width:4.8rem; }
+    .application-page .approval-roster .course-panel-toggle { font-size:.9rem; white-space:normal; word-break:normal; overflow-wrap:normal; text-align:left; }
+    .application-page .approval-roster .course-edit-direct { white-space:nowrap !important; overflow-wrap:normal !important; word-break:normal !important; }
+    .application-page .course-student-details .course-table { width:100%; min-width:0; table-layout:fixed; }
+    .application-page .course-student-details .course-table :is(th,td):first-child { width:20%; white-space:normal; }
+    .application-page .course-student-details .course-table :is(th,td):nth-child(2) { width:39%; white-space:normal; overflow-wrap:anywhere; }
+    /* Durum metni dar sütunun asgari genişliğini büyütüp tabloyu taşırmasın. */
+    .application-page .course-student-details .course-table :is(th,td):nth-child(n+3) { width:auto; white-space:normal; overflow-wrap:anywhere; }
+    .application-page .course-student-details .course-table:has(.course-row-status) :is(th,td):last-child { width:7rem; }
+}
+@media(max-width:600px) {
+    .application-page .panel-width { width:100%; }
+    .application-page .staff-meeting-strip .chat-hours { margin-left:3.4rem; }
+    .application-page .staff-meeting-strip input { width:100%; }
+    .application-page .period-permission-create .period-management-form>label:has([name=Gerekce]) { flex-basis:100%; }
+}
+
+/* 22 Ekim: işlem adları görünür, boyutlar yalnız içerik kadar. */
+.application-page .academic-page .academic-term-editor form { align-items:flex-end; }
+.application-page .academic-page .academic-term-editor form>label { margin:0; }
+.application-page .academic-page .academic-term-editor select { box-sizing:border-box; height:38px; min-height:38px; }
+.application-page .academic-page .academic-term-editor .primary-button { flex:0 0 auto; align-self:flex-end; display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; width:max-content; min-width:0; height:32px; min-height:32px; margin:0 0 3px; padding:.2rem .6rem; line-height:1.2; }
+.application-page .academic-page .academic-term-section .registration-buttons .document-upload { background:#ffc700; color:#153165; border:1px solid #ffc700; padding:.35rem .6rem; }
+.application-page .academic-page .academic-term-section .registration-buttons .document-upload:hover { color:#153165; text-decoration:none; }
+.application-page .course-approval .course-save { background:#153165; color:#fff; border:1px solid #153165; padding:.35rem .6rem; }
+
+.application-page .grade-student-roster tbody tr:not(.grade-student-empty) { cursor:pointer; }
+.application-page .grade-student-roster tbody tr:not(.grade-student-empty):hover { background:#f3f6fa; }
+
+/* Onay Takip: renk yalnız durum yazısında; veri hücreleri beyaz kalır. */
+.application-page .course-workspace:has(.approval-roster) .program-information tbody :is(th,td) { background:#fff; }
+.application-page .approval-roster td.approval-status.status-approved { color:#08742c; }
+.application-page .status-badge.status-approved { color:#000; }
+.application-page .approval-roster td.approval-status.status-rejected { color:#b91c1c; }
+.application-page .approval-roster td.approval-status .status-sub { display:block; font-size:.84rem; line-height:1.25; white-space:nowrap; }
+.application-page .approval-roster td.approval-status.status-passive { color:#6b7280; }
+
+/* GANO tablosu: akademik değerlendirme sütunu ve renk vurgusu */
+.application-page .program-information td.academic-eval-cell { font-size:.88rem; line-height:1.35; white-space:normal; text-align:left; max-width:22rem; }
+.application-page .program-information td.academic-eval-cell.gano-allowed { color:#856404; font-weight:600; }
+.application-page .program-information td.academic-eval-cell.gano-violation { color:#b91c1c; font-weight:600; }
+.application-page .program-information td.academic-eval-cell.gano-normal { color:#08742c; }
+.application-page .registration-grid .field-validation-error { display:block; color:#a01515; font-size:.84rem; font-weight:600; line-height:1.3; }
+
+.application-page .archive-workspace .evrak-panel .program-information thead th:nth-child(1) { width:29%; }
+.application-page .archive-workspace .evrak-panel .program-information thead th:nth-child(2) { width:16%; }
+.application-page .archive-workspace .evrak-panel .program-information thead th:nth-child(3) { width:17%; }
+.application-page .archive-workspace .evrak-panel .program-information thead th:nth-child(4) { width:13%; }
+.application-page .archive-workspace .evrak-panel .program-information thead th:nth-child(5) { width:25%; }
+
+.application-page .archive-workspace .document-upload-date { white-space:normal; }
+
+/* Dönem kimliği ve sade işlem ayırıcıları; kutu görünümü yok. */
+.application-page .archive-workspace .archive-student-heading { background:transparent; color:#153165; border:0; padding:0; margin:0 0 1.25rem; font-size:1.15rem; }
+.application-page .archive-workspace .evrak-panel { margin-bottom:2rem; }
+.application-page .archive-workspace .archive-period-heading { background:transparent; color:#153165; border:0; padding:0; margin:0 0 .6rem; font-size:1rem; }
+.application-page .archive-workspace td>.archive-inline-actions::before { content:""; position:absolute; left:50%; top:.25rem; bottom:.25rem; width:1px; background:#bdc8d6; pointer-events:none; }
+.application-page .archive-workspace td>.archive-inline-actions:has(>:nth-child(3))::after { content:""; position:absolute; top:50%; left:0; right:0; height:1px; background:#153165; pointer-events:none; }
+.application-page .archive-workspace td>.archive-inline-actions:has(>:only-child)::before { display:none; }
+
+/* Son toplu sadeleştirme: dönem, işlem ve kompakt alanlar. */
+.application-page .archive-workspace .archive-period-heading { background:#153165; color:#fff; padding:.55rem .7rem; margin:0; }
+.application-page .archive-workspace .archive-previous-version :is(th,td) { background:#f4f6fa; color:#526072; }
+.application-page .archive-workspace .archive-upload-editor>.evrak-upload-form { grid-template-columns:minmax(9rem,1fr) minmax(12rem,1.4fr) auto auto; }
+.application-page .archive-workspace td:has(>.archive-inline-actions) { padding:0; }
+.application-page .archive-workspace td>.archive-inline-actions { max-width:none; }
+.application-page .archive-workspace td>.archive-inline-actions::before { top:0; bottom:0; background:#153165; }
+.application-page .archive-workspace td>.archive-inline-actions:has(>.archive-reject)::before { bottom:50%; }
+.application-page .archive-workspace td>.archive-inline-actions::after { left:0; right:0; background:#153165; }
+.application-page .archive-workspace td>.archive-inline-actions:has(>.archive-reject)>.archive-download { grid-column:1/-1; grid-row:2; }
+.application-page .archive-workspace td>.archive-inline-actions>.archive-approve { grid-column:1; grid-row:1; }
+.application-page .archive-workspace td>.archive-inline-actions>.archive-reject { grid-column:2; grid-row:1; }
+.application-page .course-undo-direct { padding:0; border:0; background:transparent; color:#b91c1c; font:inherit; cursor:pointer; }
+.application-page .academic-term-section .registration-period .year-field { flex:0 0 6rem; width:6rem; }
+.application-page .academic-term-section .registration-period label:not(.year-field) { flex:0 0 6rem; width:6rem; }
+.application-page .academic-term-section .registration-period :is(input,select) { width:100%; box-sizing:border-box; }
+.application-page .numeric-results-scroll { max-width:55rem; }
+
+.application-page .grade-approval-mark { color:#08742c; font-weight:700; font-size:1.1rem; }
+
+.application-page .archive-workspace .evrak-panel td:has(>.archive-inline-actions) { padding:0; }
+.application-page .archive-workspace td>.archive-inline-actions:has(>.archive-reject) { min-height:5rem; }
+/* Öğrenci ayrıntısında her bağımsız ayar bölümü önceki içerikten ayrılır. */
+.application-page .panel-content[aria-labelledby="ayrinti-basligi"] > :is(section,details):not(.student-profile) { margin-top:2rem; }
+.application-page .panel-content[aria-labelledby="ayrinti-basligi"] > section > h2 { margin-top:0; }
+
+/* Dönem arşivleri ayrı gruplar; mevcut tablo düzeni korunur. */
+.application-page .archive-workspace .evrak-panel { border:1px solid #bdc8d6; margin-bottom:2rem; }
+.application-page .archive-workspace .evrak-panel>.archive-inline-actions,
+.application-page .archive-workspace .evrak-panel>h3:not(.archive-period-heading) { margin-left:.5rem; margin-right:.5rem; }
+.application-page .ders-deneme-mesaji:not(:empty) { color:#b91c1c; margin:.5rem 0; font-weight:600; }
+
+/* Akademik ayar gruplarında aynı başlık ölçüsü ve kontrastı. */
+.application-page .archive-workspace td>.archive-inline-actions>.archive-download {
+    color:#000; font-weight:700;
+}
+.application-page .archive-workspace td>.archive-inline-actions>:is(.archive-approve,.archive-reject) {
+    font-weight:700;
+}
+.application-page .academic-page :is(.academic-term-section,.common-curricula,.rules-section)>h2,
+.application-page .academic-page .source-departments-heading>h3 {
+    font-family:"Open Sans",Verdana,Arial,sans-serif; font-size:1rem; font-weight:600;
+    color:#fff; background:#153165; padding:.6rem .75rem; margin:0 0 .8rem;
+}

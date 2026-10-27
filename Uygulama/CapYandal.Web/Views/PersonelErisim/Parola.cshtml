@@ -1,0 +1,14 @@
+@model CapYandal.Web.Models.PersonelParolaOnayModeli
+@{ ViewData["Title"] = "Personel erişim doğrulama"; ViewData["HideAccountNav"] = true; }
+<section class="account-box" aria-labelledby="personel-parola-basligi">
+    <h1 id="personel-parola-basligi">Parolanızı belirleyin</h1>
+    <p>8–20 karakter; büyük harf, küçük harf, rakam ve özel karakter kullanın. Parolanız e-postayla gönderilmez.</p>
+    <form asp-action="Onayla" method="post" novalidate>
+        <partial name="_TekFormHatasi" />
+        <input asp-for="UserId" type="hidden" /><input asp-for="RequestId" type="hidden" /><input asp-for="Token" type="hidden" />
+        <div class="form-field"><label asp-for="YeniParola"></label><input asp-for="YeniParola" autocomplete="new-password" maxlength="20" /></div>
+        <div class="form-field"><label asp-for="YeniParolaTekrar"></label><input asp-for="YeniParolaTekrar" autocomplete="new-password" maxlength="20" /></div>
+        <button type="submit" class="primary-button">Parolayı kaydet</button>
+    </form>
+    <a asp-controller="Hesap" asp-action="Giris">Giriş ekranına dön</a>
+</section>

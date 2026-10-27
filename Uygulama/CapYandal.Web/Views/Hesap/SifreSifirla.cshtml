@@ -1,0 +1,22 @@
+@model CapYandal.Web.Models.SifreSifirlamaModel
+@{ ViewData["Title"] = "Yeni parola belirle"; ViewData["HideAccountNav"] = true; }
+<section class="account-box" aria-labelledby="yeni-parola-basligi">
+    <h1 id="yeni-parola-basligi">Yeni parola belirle</h1>
+    <p>Yeni parolanız 8–20 karakter arasında olmalı; büyük ve küçük harf, rakam ve özel karakter içermelidir.</p>
+    <form asp-action="SifreSifirla" method="post" novalidate>
+        <partial name="_TekFormHatasi" />
+        <input asp-for="UserId" type="hidden" />
+        <input asp-for="ResetId" type="hidden" />
+        <input asp-for="Token" type="hidden" />
+        <div class="form-field">
+            <label asp-for="YeniParola"></label>
+            <input asp-for="YeniParola" autocomplete="new-password" />
+        </div>
+        <div class="form-field">
+            <label asp-for="YeniParolaTekrar"></label>
+            <input asp-for="YeniParolaTekrar" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="primary-button">Parolayı yenile</button>
+        <a class="password-return" asp-action="Giris">Girişe dön</a>
+    </form>
+</section>

@@ -1,0 +1,15 @@
+@model CapYandal.Web.Models.SifreSifirlamaTalebiModel
+@{ ViewData["Title"] = "Şifremi unuttum"; ViewData["HideAccountNav"] = true; }
+<section class="account-box" aria-labelledby="kurtarma-basligi">
+    <h1 id="kurtarma-basligi">Şifremi unuttum</h1>
+    <p>Öğrenci numaranızı veya personel kullanıcı adınızı yazın. Hesabınız uygunsa kayıtlı kurumsal adresinize doğrulama bağlantısı gönderilir.</p>
+    <form asp-action="SifremiUnuttum" method="post">
+        <partial name="_TekFormHatasi" />
+        <div class="form-field">
+            <label asp-for="KullaniciAdi"></label>
+            <input asp-for="KullaniciAdi" autocomplete="username" maxlength="256" />
+        </div>
+        <button type="submit" class="primary-button compact-action">Parola yenileme bağlantısı gönder</button>
+    </form>
+    <p class="account-return"><a asp-action="Giris">Giriş ekranına dön</a></p>
+</section>

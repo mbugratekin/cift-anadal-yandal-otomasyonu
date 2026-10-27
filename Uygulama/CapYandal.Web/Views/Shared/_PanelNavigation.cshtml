@@ -1,0 +1,96 @@
+@model CapYandal.Web.Models.PanelModel
+@using System.Globalization
+<div class="panel-topbar">
+    <p class="panel-system-title"><span>Selçuk Üniversitesi Bilgisayar Mühendisliği</span> <span>Çift Anadal / Yan Dal Otomasyonu</span></p>
+    <details class="panel-account">
+        <summary class="panel-account-toggle">
+            @if (Model.FotografVarMi)
+            {
+                <img class="account-photo" src="@Url.Action("Fotograf", "Profil")" alt="" />
+            }
+            else
+            {
+                <img class="account-photo account-placeholder" src="~/images/profil-siluet.svg" asp-append-version="true" alt="" />
+            }
+            <strong>@Model.KullaniciAdi.ToUpper(CultureInfo.GetCultureInfo("tr-TR"))</strong>
+            <span class="account-chevron" aria-hidden="true">▾</span>
+            <span class="visually-hidden">Hesap menüsü</span>
+        </summary>
+        <div class="panel-account-menu">
+            @if (Context.Items[CapYandal.Web.Security.HesapOturumu.ErisimAnahtari] is CapYandal.Web.Security.HesapErisimDurumu { OgrenciKurulumuGerekli: false })
+            {
+                <a asp-controller="Hesap" asp-action="ParolaDegistir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5Z" /></svg>Şifre Değiştir</a>
+            }
+            <form asp-controller="Hesap" asp-action="Cikis" method="post"><button type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10M6 5a9 9 0 1 0 12 0" /></svg>Çıkış</button></form>
+        </div>
+    </details>
+    <button type="button" class="panel-mobile-toggle" aria-controls="panel-navigation" aria-expanded="false" aria-label="Menüyü aç">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18" /></svg>
+    </button>
+</div>
+<nav id="panel-navigation" class="panel-nav" aria-label="@Model.Baslik menüsü">
+    <a class="panel-brand" asp-controller="Hesap" asp-action="Index" aria-label="@(Model.OgrenciMi ? "Ana sayfa" : "Öğrenciler") — Selçuk Üniversitesi">
+        <img class="panel-emblem" src="~/images/selcuk-amblem-resmi.png" asp-append-version="true" alt="" aria-hidden="true" />
+    </a>
+    <ul class="panel-tabs">
+        @if (Model.OgrenciMi)
+        {
+            <li><a class="panel-tab @(Model.AktifBolum == "Ana Sayfa" ? "is-active" : "")" asp-controller="Hesap" asp-action="Index" aria-current="@(Model.AktifBolum == "Ana Sayfa" ? "page" : null)"><partial name="_MenuIcon" model='@("Ana Sayfa")' /><span class="menu-label-stacked" aria-label="Ana Sayfa"><span>Ana</span><span>Sayfa</span></span></a></li>
+        }
+        @foreach (var bolum in Model.Bolumler.SelectMany(x => x == "Dokümanlar" ? new[] { x, "Öğrenci Evrakları" } : x == "Onay Takip" ? new[] { x, "Not Takibi" } : new[] { x }).Distinct())
+        {
+            if (Model.OgrenciMi && !Model.OgrenciDersMenuleriGorunur && bolum == "Ders Kaydı ve Evrak İşlemleri")
+            {
+                continue;
+            }
+            if (bolum == "Hesap Yönetimi")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="PersonelHesap" asp-action="Index" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span class="menu-label-stacked" aria-label="Hesap Yönetimi"><span>Hesap</span><span>Yönetimi</span></span></a></li>
+            }
+            else if (bolum == "İşlem Geçmişi")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="IslemGecmisi" asp-action="Index" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span class="menu-label-stacked" aria-label="İşlem Geçmişi"><span>İşlem</span><span>Geçmişi</span></span></a></li>
+            }
+            else if (bolum == "Not Takibi")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="Panel" asp-action="@(Model.OgrenciMi ? "DersGecmisi" : "DersNotTakibi")" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span class="menu-label-stacked" aria-label="Not Takibi"><span>Not</span><span>Takibi</span></span></a></li>
+            }
+            else if (bolum is "Ders Kaydı ve Evrak İşlemleri" or "Onay Takip" or "Ders Onayları" or "Ders Listeleri ve Onaylar")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="Panel" asp-action="@(bolum == "Ders Kaydı ve Evrak İşlemleri" ? "DersKaydi" : "OnayTakip")" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model='@(bolum == "Ders Kaydı ve Evrak İşlemleri" ? "Ders Kaydı" : bolum)' />@if(bolum == "Ders Kaydı ve Evrak İşlemleri") { <span class="menu-label-stacked" aria-label="Ders Kaydı"><span>Ders</span><span>Kaydı</span></span> } else if(bolum == "Ders Listeleri ve Onaylar") { <span class="menu-label-stacked" aria-label="@bolum"><span>Ders Listeleri</span><span>ve Onaylar</span></span> } else if(bolum == "Onay Takip") { <span class="menu-label-stacked" aria-label="Onay Takip"><span>Onay</span><span>Takip</span></span> } else { <span>@bolum</span> }</a></li>
+            }
+            else if (bolum == "Öğrenci Evrakları")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="Panel" asp-action="Evrak" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span class="menu-label-stacked" aria-label="Öğrenci Evrakları"><span>Öğrenci</span><span>Evrakları</span></span></a></li>
+            }
+            else if (bolum == "Sohbet")
+            {
+                <li class="sohbet-menu-item"><a class="panel-tab panel-tab-chat @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="Panel" asp-action="Sohbet" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span>@bolum</span></a><a class="sohbet-bildirim" asp-controller="Panel" asp-action="Sohbet" asp-route-okunmamis="true" data-url="@Url.Action("Bildirimler","Sohbet")" aria-label="Okunmamış mesajlar" hidden></a></li>
+            }
+            else if (bolum == "Akademik Koşullar")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="Panel" asp-action="AkademikKosullar" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span class="menu-label-stacked" aria-label="Akademik Koşullar"><span>Akademik</span><span>Koşullar</span></span></a></li>
+            }
+            else if (bolum is "Öğrenciler" or "Dokümanlar")
+            {
+                <li><a class="panel-tab @(Model.AktifBolum == bolum ? "is-active" : "")" asp-controller="Panel" asp-action="@(bolum == "Öğrenciler" ? "Ogrenciler" : "Dokumanlar")" aria-current="@(Model.AktifBolum == bolum ? "page" : null)"><partial name="_MenuIcon" model="bolum" /><span>@bolum</span></a></li>
+            }
+            else
+            {
+                <li>
+                    <button type="button" class="panel-tab" disabled title="@bolum — Henüz kullanıma açık değil" aria-label="@bolum">
+                        <partial name="_MenuIcon" model="bolum" />
+                        @if (bolum == "Ders Kaydı ve Evrak İşlemleri")
+                        {
+                            <span class="menu-label-stacked" aria-hidden="true"><span>Ders Kaydı</span><span class="menu-label-connector">ve</span><span>Evrak İşlemleri</span></span>
+                        }
+                        else
+                        {
+                            <span>@bolum</span>
+                        }
+                    </button>
+                </li>
+            }
+        }
+    </ul>
+</nav>

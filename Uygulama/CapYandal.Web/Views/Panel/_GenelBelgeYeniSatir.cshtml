@@ -1,0 +1,20 @@
+@model CapYandal.Web.Models.GenelBelgeSatirModel
+<div class="new-document-row">
+    <div class="new-document-info">
+    @if(Model.Indirilebilir)
+    {
+        <a asp-controller="GenelBelgeIndirme" asp-action="Indir" asp-route-id="@Model.Id" asp-route-surumNo="@Model.SurumNo" asp-route-onizle="true" target="_blank" rel="noopener">@Model.DosyaAdi</a>
+    }
+    else { <span>@Model.DosyaAdi — İçerik kullanılamıyor.</span> }
+    <small>Yüklenme Tarihi: @(Model.GuncellemeAni?.ToOffset(TimeSpan.FromHours(3)).ToString("dd.MM.yyyy") ?? "Bilinmiyor")</small>
+    </div>
+    @if(User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+    {
+        <form class="new-archive-form" asp-controller="GenelBelgeArsiv" asp-action="Kaydet" method="post">
+            <input type="hidden" name="belgeId" value="@Model.BelgeId" />
+            <input type="hidden" name="surum" value="@Model.BelgeSurumu" />
+            <input type="hidden" name="arsivle" value="@(!Model.Arsivde ? "true" : "false")" />
+            <button type="submit" class="@(Model.Arsivde ? "new-restore" : "new-archive")">@(Model.Arsivde ? "Geri al" : "Arşive kaldır")</button>
+        </form>
+    }
+</div>

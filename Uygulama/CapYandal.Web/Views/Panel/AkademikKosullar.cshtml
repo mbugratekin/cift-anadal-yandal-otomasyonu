@@ -1,0 +1,78 @@
+@model CapYandal.Web.Models.PanelModel
+@{ ViewData["Title"] = "Akademik Koşullar"; var kapi = Model.KayitKapisi!; var yonetebilir = User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator); }
+<link rel="stylesheet" href="~/css/akademik-kosullar.css" asp-append-version="true" />
+<section class="panel-content documents-workspace academic-page" aria-labelledby="akademik-basligi">
+    <h1 id="akademik-basligi" class="visually-hidden">Akademik Koşullar</h1>
+    <section class="registration-section academic-term-section" aria-labelledby="islem-donemi-basligi">
+        <h2 id="islem-donemi-basligi">Akademik Dönem ve Ders Kaydı</h2>
+        @if (TempData["Basari"] is string donemMesaji) { <p role="status">@donemMesaji</p> }
+        @if (TempData["Hata"] is string donemHatasi) { <p role="alert">@donemHatasi</p> }
+        @if(!yonetebilir) {
+            @if(ViewData["IslemDonemi"] is CapYandal.Web.Models.IslemDonemiModel readPeriod) { <p>Akademik dönem: <strong>@readPeriod.Ad</strong></p> }
+        } else {
+        <div class="academic-period-layout">
+        <div class="document-category-content registration-control">
+            <form asp-action="AkademikKosullar" asp-controller="Panel" method="get" class="registration-row registration-period">
+                <label class="year-field">Yıl<input name="yil" type="number" min="2" max="9998" step="1" value="@kapi.Yil" required /></label>
+                <label>Dönem<select name="yariyil"><option value="1" selected="@(kapi.Yariyil == 1)">Güz</option><option value="2" selected="@(kapi.Yariyil == 2)">Bahar</option></select></label>
+                <strong class="registration-status @(kapi.AcikMi ? "is-open" : "is-closed")">Ders kaydı: @(kapi.AcikMi ? "Açık" : "Kapalı")</strong>
+                <noscript><button type="submit" class="document-upload">Dönemi seç</button></noscript>
+            </form>
+                <form asp-controller="KayitKapisi" asp-action="Kaydet" method="post" class="registration-row registration-command">
+                    <input type="hidden" name="Yil" value="@kapi.Yil" /><input type="hidden" name="Yariyil" value="@kapi.Yariyil" />
+                    <input type="hidden" name="Niyet" value="@(kapi.AcikMi ? 2 : 1)" /><input type="hidden" name="Surum" value="@kapi.Surum" />
+                    <label>Başlangıç<input name="Baslangic" type="datetime-local" step="60" value="@kapi.Baslangic" readonly="@kapi.AcikMi" /></label>
+                    <label>Bitiş<input name="Bitis" type="datetime-local" step="60" value="@kapi.Bitis" /></label>
+                    <div class="registration-buttons"><button type="submit" class="document-upload">@(kapi.AcikMi ? "Ders Kaydını Kapat" : "Ders Kaydını Aç")</button><button type="button" class="registration-clear">Temizle</button></div>
+                </form>
+                <p class="registration-message" role="alert"></p>
+        </div>
+        <div class="academic-term-editor">
+        @if (ViewData["IslemDonemi"] is CapYandal.Web.Models.IslemDonemiModel islem)
+        {
+            <div class="document-category-content current-academic-period"><span>Etkin dönem: <strong>@islem.Ad</strong></span>
+            <form asp-controller="DonemYonetimi" asp-action="Ilerlet" method="post" class="period-management-form">
+                <input type="hidden" name="id" value="@islem.Id" /><input type="hidden" name="surum" value="@islem.Surum" />
+                <label>Akademik dönem<select name="secim"><option value="mevcut">@islem.Ad</option><option value="sonraki">@islem.Sonraki</option></select></label>
+                <button type="submit" class="primary-button">Kaydet</button>
+            </form>
+            </div>
+        }
+        else { <p>İşlem dönemi henüz tanımlanmamış.</p> }
+        </div></div>
+        }
+    </section>
+    <partial name="_MufredatYonetimi" model="Model" />
+    <section class="rules-section" aria-labelledby="kosul-basligi" id="academic-rules"
+             data-write="@(yonetebilir ? "true" : "false")" data-read-url="@Url.Action("Oku", "AkademikKosul")"
+             data-save-url="@Url.Action("Kaydet", "AkademikKosul")">
+        <h2 id="kosul-basligi">ÇAP / Yan Dal Koşulları</h2>
+        <div class="rule-tabs" aria-label="Program koşulları"><button type="button" data-program="1" aria-pressed="true">ÇAP</button><button type="button" data-program="2" aria-pressed="false">Yan Dal</button></div>
+        <form id="academic-rules-form" novalidate>
+            @if (yonetebilir) { @Html.AntiForgeryToken() }
+            <select id="numeric-curricula" hidden aria-hidden="true" disabled>
+                @foreach (var item in Model.Sablonlar)
+                { <option value="@item.Id" data-program="@(item.Program == "ÇAP" ? 1 : 2)">@MufredatGorunumu.Kapsam(item.Program, item.AnaDal, item.MufredatAdi)</option> }
+            </select>
+            <div id="academic-rule-editor" class="academic-rule-editor" hidden aria-label="Koşul ekleme ve düzenleme"></div>
+            <div class="rules-scroll"><table class="rules-table unified-rules-table">
+                <thead><tr><th scope="col">Koşul</th><th scope="col">Kapsam</th><th scope="col">Gerekli değer</th><th scope="col">İşlem</th></tr></thead>
+                <tbody id="academic-rules-body"></tbody>
+                <tbody id="academic-numeric-body"></tbody>
+            </table></div>
+            @if (yonetebilir)
+            {
+                <div class="rules-toolbar"><div class="condition-add"><label class="visually-hidden" for="academic-add-kind">Koşul türü</label><select id="academic-add-kind"><option value="gano">GANO koşulu</option><option value="numeric">Ders, kredi, AKTS veya süre koşulu</option></select><button type="button" id="academic-add" class="rule-add" disabled>Koşul ekle</button></div><div class="rule-actions"><button type="submit" class="rule-save" disabled>Koşulları kaydet</button><button type="button" id="academic-reset" class="rule-reset" disabled>Vazgeç</button></div></div>
+            }
+            <p id="academic-rules-message" class="rules-message" role="status">Kurallar yükleniyor.</p>
+        </form>
+        <noscript><p>Koşulları okumak ve düzenlemek için JavaScript etkin olmalıdır.</p></noscript>
+    </section>
+    <partial name="_KaynakAnaDallar" />
+</section>
+@section Scripts {
+    <script src="~/js/kayit-kapisi.js" asp-append-version="true" defer></script>
+    <script src="~/js/akademik-kosullar.js" asp-append-version="true" defer></script>
+    <script src="~/js/kaynak-anadallar.js" asp-append-version="true" defer></script>
+    <script src="~/js/ortak-mufredatlar.js" asp-append-version="true" defer></script>
+}

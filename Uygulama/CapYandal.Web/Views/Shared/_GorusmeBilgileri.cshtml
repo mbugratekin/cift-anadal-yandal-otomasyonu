@@ -1,0 +1,19 @@
+@model IReadOnlyList<CapYandal.Web.Models.GorusmeBilgisiModel>
+<section class="student-contact" aria-labelledby="meeting-heading">
+    <h2 id="meeting-heading" class="visually-hidden">Koordinatör iletişim bilgileri</h2>
+    @foreach(var person in Model.Where(person => person.Gorev == "Koordinatör"))
+        {
+            <h3>Koordinatör</h3>
+            <dl class="student-information">
+                <dt>Adı Soyadı</dt><dd>@person.AdSoyad</dd>
+                <dt>E-posta</dt><dd>@(person.IletisimEpostasi ?? "Henüz belirtilmedi")</dd>
+                <dt>Odası</dt>
+                <dd>@(string.IsNullOrWhiteSpace(person.Blok) && string.IsNullOrWhiteSpace(person.Oda) ? "Henüz belirtilmedi" : person.Blok)
+                    @(string.IsNullOrWhiteSpace(person.Oda) ? "" : "· Oda " + person.Oda)</dd>
+                <dt>Görüşme Saatleri</dt>
+                <dd>@foreach(var range in person.Araliklar) { <div>@range.Metin</div> }
+                    @if(person.Araliklar.Count == 0) { <span>Henüz belirtilmedi</span> }</dd>
+            </dl>
+        }
+    @if(!Model.Any(person => person.Gorev == "Koordinatör")) { <p>Koordinatör bilgisi henüz belirtilmedi.</p> }
+</section>

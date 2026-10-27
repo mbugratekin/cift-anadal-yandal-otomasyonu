@@ -1,0 +1,133 @@
+@model CapYandal.Web.Models.PanelModel
+@using CapYandal.Web.Models
+@using CapYandal.Web.Security
+@using System.Globalization
+@functions { string Tutar(decimal? value) => value?.ToString("0.##", CultureInfo.GetCultureInfo("tr-TR")) ?? "—"; }
+@{ var panel = Model.DersPaneli!; var selection = Model.AktifBolum == "Ders Kaydı ve Evrak İşlemleri"; var coordinator = User.IsInRole(UygulamaRolleri.Koordinator); ViewData["Title"] = selection ? "Ders Kaydı" : "Onay Takip";
+    // Onay takipte pasif öğrenciler listelenmez; yalnız aktif programlar işlem bekleyen sırasıyla gösterilir.
+    var gosterilenListeler = selection ? panel.Listeler.ToArray() : panel.Listeler.Where(x => x.ProgramAktifMi).ToArray();
+    var siraliListeler = gosterilenListeler.OrderBy(x => x.Onayli ? 2 : x.ListeId.HasValue ? 0 : 1).ThenBy(x => x.Ogrenci).ToArray(); }
+<section class="panel-content student-programs course-workspace @(Model.OgrenciMi && !selection ? "student-approval-results" : null)" aria-labelledby="ders-basligi">
+    <h1 id="ders-basligi" class="visually-hidden">@(selection ? "Ders Kaydı" : "Onay Takip")</h1>
+    @if(TempData["DersGonderildi"] is string sent) { <p class="success-notice" role="status">@sent</p> }
+    @if(panel.Listeler.Count == 0) { <p>Bu dönem için @(selection ? "ders kaydı veya bağlı müfredat bulunmuyor." : "gönderilmiş ders listesi bulunmuyor.")</p> }
+    @if(!Model.OgrenciMi && panel.Listeler.Count > 0) {
+        <label class="approval-student-search">Öğrenci ara<input type="search" placeholder="Öğrenci no veya ad soyad" maxlength="128" autocomplete="off" /></label>
+        <p class="approval-search-message" role="status"></p>
+        <div class="profile-table-scroll"><table class="program-information approval-roster">
+            <caption class="visually-hidden">Öğrencilerin ders listeleri ve onay durumları</caption>
+            <thead><tr><th scope="col">Öğrenci</th><th scope="col">Durum</th><th scope="col">İşlem</th></tr></thead>
+            <tbody>@foreach(var entry in siraliListeler) {
+                <tr class="@(entry.Onayli ? "is-approved" : null)"><th scope="row"><button type="button" class="course-panel-toggle" aria-expanded="false" aria-controls="liste-@entry.ProgramId" aria-label="@entry.Ogrenci ders listesini görüntüle">@entry.Ogrenci</button></th>
+                <td class="approval-status @(!entry.ProgramAktifMi ? "status-passive" : entry.Onayli ? "status-approved" : entry.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.Reddedildi ? "status-rejected" : "")">@if(!entry.ProgramAktifMi) { @:Program pasif
+                } else if(entry.Onayli) { <span class="status-approved">@(entry.MazeretliMi ? "Mazeretli" : "Onaylandı")</span>
+                } else if(entry.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.Reddedildi && entry.ListeGecmisi?.Any(x => x.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.Onaylandi) == true) { <span>Onay geri alındı</span><small class="status-sub">düzeltme bekliyor</small>
+                } else if(entry.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.Reddedildi) { <span>Reddedildi</span><small class="status-sub">düzeltme bekliyor</small>
+                } else if(entry.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.IptalEdildi) { @:İptal edildi
+                } else if(entry.ListeId.HasValue) { @:Onay bekliyor
+                } else { @:Henüz gönderilmedi
+                }</td>
+                 <td>@if(coordinator && panel.KayitAcik && entry.Onayli) { <button type="button" class="course-undo-direct" data-panel-id="liste-@entry.ProgramId" aria-label="@entry.Ogrenci ders listesi onayını geri al">Onayı geri al</button> } else if(coordinator && entry.Duzenlenebilir) { <button type="button" class="course-edit-direct" data-panel-id="liste-@entry.ProgramId" aria-label="@entry.Ogrenci ders listesini düzenle">Düzenle</button> } else if(!coordinator) { <button type="button" class="course-panel-toggle" aria-expanded="false" aria-controls="liste-@entry.ProgramId" aria-label="@entry.Ogrenci ders listesini görüntüle">Ders listesi</button> }</td></tr>
+            }</tbody>
+        </table></div>
+    }
+    @foreach (var entry in gosterilenListeler)
+    {
+        var correctionFormId = entry.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.OnayBekliyor ? "karar-" + entry.ListeId : null;
+        var durumMetni = entry.Durum switch {
+            CapYandal.Web.Data.Entities.DersSecimiDurumu.Onaylandi => entry.MazeretliMi ? "Mazeretli" : "Onaylandı",
+            CapYandal.Web.Data.Entities.DersSecimiDurumu.OnayBekliyor when entry.ListeGecmisi?.Any(x => x.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.Onaylandi) == true => "Onay geri alındı",
+            CapYandal.Web.Data.Entities.DersSecimiDurumu.Reddedildi when entry.ListeGecmisi?.Any(x => x.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.Onaylandi) == true => "Onay geri alındı",
+            CapYandal.Web.Data.Entities.DersSecimiDurumu.Reddedildi => "Reddedildi",
+            CapYandal.Web.Data.Entities.DersSecimiDurumu.IptalEdildi => "İptal edildi",
+            _ => entry.ListeId.HasValue ? "Onay bekliyor" : "Henüz gönderilmedi"
+        };
+        var kayitDurumMetni = Model.OgrenciMi && selection ? (entry.ListeId.HasValue ? "Kaydedildi" : string.Empty) : durumMetni;
+        <section class="course-student-details" id="liste-@entry.ProgramId" hidden="@(!Model.OgrenciMi)">
+        <section class="course-list-block" aria-label="Ders listesi">
+            @if (!Model.OgrenciMi) { <h2>@entry.Ogrenci</h2><p class="course-curriculum"><strong>@MufredatGorunumu.Ad(entry.MufredatAdi)</strong></p> }
+            <p class="course-totals"><span>Toplam kredi: <output class="course-credit">@Tutar(entry.Kalemler.Sum(k=>k.Kredi))</output></span> <span>Toplam AKTS: <output class="course-total">@Tutar(entry.Kalemler.Sum(k=>k.Akts))</output></span></p>
+            @if(!Model.OgrenciMi && entry.ListeId is null) {
+                <p>@(entry.ProgramAktifMi ? "Bu dönem için ders listesi henüz gönderilmedi." : "Program pasif. Geçmiş ders kayıtları korunuyor.")</p>
+            }
+            @if (entry.Duzenlenebilir && (!Model.OgrenciMi || selection))
+            {
+                @if(coordinator) { <div class="course-readonly"><partial name="_DersListesiTablosu" model="new DersTabloModel(entry.Kalemler, false, entry.Onayli, false, null, entry.DuzeltilecekDersler, correctionFormId)" /></div> }
+                <form hidden="@coordinator" method="post" asp-controller="Ders" asp-action="@(coordinator && !panel.KayitAcik ? "MazeretliKaydet" : coordinator && entry.ListeId.HasValue ? "DuzeltVeOnayla" : "Gonder")" class="course-command" enctype="multipart/form-data" data-student-submit="@(!coordinator ? "true" : "false")" data-bos-liste-izinli="@(coordinator ? "true" : "false")">
+                    <input type="hidden" name="ProgramId" value="@entry.ProgramId" /><input type="hidden" name="DonemId" value="@entry.DonemId" />
+                    <input type="hidden" name="ListeId" value="@(entry.ListeId ?? Guid.Empty)" /><input type="hidden" name="ListeSurum" value="@entry.ListeSurum" />
+                    <input type="hidden" name="SablonSurum" value="@entry.SablonSurum" /><input type="hidden" name="Yil" value="@panel.Yil" /><input type="hidden" name="Yariyil" value="@panel.Yariyil" />
+                    <partial name="_DersListesiTablosu" model="new DersTabloModel(entry.Kalemler, true, entry.Onayli, !coordinator, kayitDurumMetni, Model.OgrenciMi && selection ? null : entry.DuzeltilecekDersler)" />
+                    <input type="hidden" class="course-requested-corrections" value="@string.Join(",", entry.DuzeltilecekDersler)" />
+                    <div class="course-edit-tools"><button type="button" class="course-open text-button">Ders Seç</button>
+                    </div>
+                    <div class="course-actions"><button type="submit" class="text-button course-save">@(coordinator ? (!panel.KayitAcik ? "Mazeretli Kaydı Onayla" : "Kaydet ve onayla") : "Onaya gönder")</button>@if(coordinator) { <button type="button" class="course-reset text-button">Vazgeç</button> }</div>
+                </form>
+                <dialog class="course-picker" aria-labelledby="secim-@entry.ProgramId">
+                    <h2 id="secim-@entry.ProgramId" class="visually-hidden">Ders seçimi</h2>
+                    <label class="course-code-search">Ders kodu veya adıyla ara<input type="search" maxlength="128" autocomplete="off" /></label>
+                    <p id="ders-sonuc-@entry.ProgramId" class="course-search-status" role="status"></p>
+                    <div class="profile-table-scroll"><table class="program-information"><thead><tr><th>Ders Kodu / Ders Türü</th><th>Ders Adı</th><th>Kredi</th><th>AKTS</th><th>Yarıyıl</th><th>Seç</th></tr></thead><tbody>
+                    @foreach(var course in entry.Secenekler)
+                    {
+                        <tr data-option-id="@course.DersId" data-semester-band="@(course.Yariyil % 2 == 1 ? "odd" : "even")"><td><span class="course-code">@course.Kod</span> <span class="course-kind">@(course.Tur switch { 1 => "Teknik seçmeli", 2 => "Sosyal seçmeli", 3 => "Zorunlu", _ => "Bilgi yok" })</span></td><td>@course.Ad</td><td>@course.Kredi</td><td>@course.Akts</td><td>@course.Yariyil</td><td><button type="button" class="course-add text-button" aria-label="@course.Ad dersini ekle">+</button></td></tr>
+                    }
+                    </tbody></table></div>
+                    @foreach(var course in entry.Secenekler) { var templateRow = new DersSatirModel(course, true, false, !coordinator, Model.OgrenciMi ? string.Empty : "Henüz gönderilmedi"); <template data-course-id="@course.DersId"><partial name="_DersSatiri" model="templateRow" /></template> }
+                    @if (!coordinator) { <p class="course-missing-note">Aradığınız ders katalogda yoksa <a asp-controller="Panel" asp-action="Sohbet" asp-route-dersTalebi="true">koordinatöre sohbetten bildirin</a>.</p> }
+                    <button type="button" class="course-close text-button">Seçimi tamamla</button>
+                </dialog>
+            }
+            @if (Model.OgrenciMi && selection && (entry.Onayli || !entry.Duzenlenebilir && entry.ListeId.HasValue && entry.Durum == CapYandal.Web.Data.Entities.DersSecimiDurumu.OnayBekliyor))
+            {
+                <partial name="_DersListesiTablosu" model='new DersTabloModel(entry.Kalemler, false, false, true, "Kaydedildi")'  />
+                <p role="status">
+                    Ders kaydınız kaydedildi. Koordinatörünüz gerekli düzeltmeleri yapabilir veya sizden düzeltme isteyebilir.
+                    Değişiklikleri ve onay durumunu <a asp-controller="Panel" asp-action="OnayTakip">Onay Takip</a> bölümünden izleyebilirsiniz.
+                </p>
+            }
+            else if (!entry.Duzenlenebilir || (Model.OgrenciMi && !selection))
+            {
+                <partial name="_DersListesiTablosu" model="new DersTabloModel(entry.Kalemler, false, entry.Onayli, entry.ListeId.HasValue, durumMetni, entry.DuzeltilecekDersler)" />
+                @if(entry.ListeId is null && selection) { <p class="course-note">@(panel.KayitAcik ? "Atanmış müfredatınızı koordinatörünüz kontrol etmelidir." : "Ders kaydı kapalı.")</p> }
+            }
+            @if(entry.ListeId.HasValue)
+            {
+                @if(SunumGorunumu.GerekceMetni(entry.KararGerekcesi) is { } kararMetni) { 
+                    <div class="approval-decision-banner">
+                        <strong>Koordinatör Karar Notu:</strong> <span>@kararMetni</span>
+                    </div> 
+                }
+            }
+            @if(coordinator && entry.ProgramAktifMi && entry.ListeId.HasValue && panel.KayitAcik)
+            {
+                <form id="karar-@entry.ListeId" method="post" asp-controller="Ders" asp-action="Karar" class="course-approval">
+                    <input type="hidden" name="ListeId" value="@entry.ListeId" /><input type="hidden" name="ListeSurum" value="@entry.ListeSurum" /><input type="hidden" name="Yil" value="@panel.Yil" /><input type="hidden" name="Yariyil" value="@panel.Yariyil" />
+                    <label>Liste kararı<select name="Karar">@if(!entry.Onayli) { <option value="2">Onayla</option> }@if(entry.Onayli) { <option value="1">Onayı geri al</option> } else { <option value="3">Düzeltmeye gönder</option> }<option value="4">İptal et</option></select></label>
+
+                    <button type="submit" class="text-button course-save">Kararı kaydet</button>
+                </form>
+            }
+            else if(coordinator && entry.ProgramAktifMi && entry.ListeId.HasValue && !entry.Duzenlenebilir)
+            {
+                <p class="course-note">Ders kaydı kapalıdır.</p>
+            }
+            @if(coordinator && entry.ProgramAktifMi && (entry.Duzenlenebilir || panel.KayitAcik && entry.ListeId.HasValue)) {
+                @if(!panel.KayitAcik) { <p class="course-note">Ders kaydı kapalıdır; mazeretli kayıt için kurul karar dayanağı gereklidir.</p> }
+                <label class="course-reason course-shared-reason" hidden="@panel.KayitAcik">@(!panel.KayitAcik ? "Kurul kararı / gerekçe" : "Gerekçe")<textarea rows="2" maxlength="2000" placeholder="Gerekçe yazın..." class="auto-grow-field"></textarea></label>
+            }
+            @if(entry.DegisiklikGecmisiHatasi is not null) { <p role="alert">@entry.DegisiklikGecmisiHatasi</p> }
+            @if(entry.EklenenKalemler.Count > 0 || entry.IptalKalemleri is { Count: > 0 }) {
+                var changes = entry.EklenenKalemler.Select(x=>new {x.Kod,x.Ad,x.Ani,x.Gerekce,Islem="eklendi"})
+                    .Concat((entry.IptalKalemleri ?? []).Select(x=>new {x.Kod,x.Ad,x.Ani,Gerekce=(string?)x.Gerekce,Islem="çıkarıldı"})).OrderByDescending(x=>x.Ani);
+                <section class="course-history"><h3>Ders Değişiklikleri</h3><ul>@foreach(var item in changes) {
+                    <li>@item.Kod | @item.Ad @item.Islem. <time datetime="@item.Ani.ToString("O")">@item.Ani.ToOffset(TimeSpan.FromHours(3)).ToString("dd.MM.yyyy HH:mm")</time>
+                    @if(item.Gerekce != "Onay öncesi öğrenci güncellemesi" && SunumGorunumu.GerekceMetni(item.Gerekce) is { } degisiklikMetni) { <span>@degisiklikMetni</span> }</li>
+                }</ul></section>
+            }
+            <p class="course-message" role="alert"></p>
+        </section>
+        </section>
+    }
+</section>
+@section Scripts { <script src="~/js/ders-listesi.js" asp-append-version="true" defer></script> }

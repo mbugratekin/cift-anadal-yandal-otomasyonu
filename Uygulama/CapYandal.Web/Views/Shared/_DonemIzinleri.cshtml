@@ -1,0 +1,45 @@
+@model CapYandal.Web.Models.DonemYonetimiPaneli
+@{ var yazabilir = User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator); }
+<section class="student-action-section" aria-labelledby="donem-durumu-basligi">
+    <h2 id="donem-durumu-basligi">Kayıt Dondurma</h2>
+    @if(Model.Durum != "Normal") { <p>İşlem dönemindeki durum: <strong>@Model.Durum</strong></p> }
+    @if (TempData["Basari"] is string mesaj) { <p role="status">@mesaj</p> }
+    @if (TempData["Hata"] is string hata) { <p role="alert">@hata</p> }
+    @foreach (var izin in Model.Izinler)
+    {
+        <div class="period-permission-record">
+            <p><strong>@izin.Baslangic — @izin.Bitis</strong> @izin.Tur @(izin.Iptal ? "(İptal)" : "")</p>
+            <p>@CapYandal.Web.Models.SunumGorunumu.GerekceMetni(izin.Gerekce)</p>
+            @if (izin.BelgeId is Guid belge) { <a asp-controller="KisiselBelge" asp-action="Indir" asp-route-id="@belge">Karar belgesini indir</a> }
+            @if (izin.Iptal) { <p>İptal gerekçesi: @CapYandal.Web.Models.SunumGorunumu.GerekceMetni(izin.IptalGerekcesi)</p> }
+            else if (yazabilir)
+            {
+                <details><summary>Kaydı düzelt / iptal et</summary>
+                    <p>Düzeltmede eski kaydı gerekçeyle iptal edin, ardından doğru aralığı ekleyin.</p>
+                    <form asp-controller="DonemYonetimi" asp-action="Izin" method="post" class="period-management-form">
+                        <input type="hidden" name="ProgramId" value="@Model.ProgramId" /><input type="hidden" name="Id" value="@izin.Id" />
+                        <input type="hidden" name="Surum" value="@izin.Surum" /><input type="hidden" name="iptal" value="true" />
+                        <label>İptal gerekçesi<input name="Gerekce" maxlength="2000" required /></label><button type="submit" class="secondary-button">Dondurmayı iptal et</button>
+                    </form>
+                </details>
+            }
+        </div>
+    }
+    @if (yazabilir)
+    {
+        <details class="student-management-panel period-permission-create" open>
+            <summary>Kayıt dondurma ekle</summary>
+            <form asp-controller="DonemYonetimi" asp-action="Izin" method="post" class="period-management-form">
+                <input type="hidden" name="ProgramId" value="@Model.ProgramId" />
+                <input type="hidden" name="Tur" value="Dondurma" />
+                <label>Başlangıç yılı<input name="BaslangicYili" type="number" min="1" max="9998" placeholder="2026" required /></label>
+                <label>Başlangıç dönemi<select name="BaslangicYariyili"><option value="1">Güz</option><option value="2">Bahar</option></select></label>
+                <label>Bitiş yılı<input name="BitisYili" type="number" min="1" max="9998" placeholder="2026" required /></label>
+                <label>Bitiş dönemi<select name="BitisYariyili"><option value="1">Güz</option><option value="2">Bahar</option></select></label>
+                <label>Gerekçe<textarea name="Gerekce" maxlength="2000" rows="1" required></textarea></label>
+                <label>Karar belgesi<select name="BelgeId"><option value="">Belge bağlama</option>@foreach (var belge in Model.Belgeler) { <option value="@belge.Id">@CapYandal.Web.Models.SunumGorunumu.BelgeSecimiAdi(belge.Ad)</option> }</select></label>
+                <button type="submit" class="primary-button">Kaydet</button>
+            </form>
+        </details>
+    }
+</section>

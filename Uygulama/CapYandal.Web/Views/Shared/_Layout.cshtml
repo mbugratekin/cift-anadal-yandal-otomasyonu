@@ -1,0 +1,96 @@
+@{
+    var sayfaPaneli = Model as PanelModel ?? ViewData["PanelModel"] as PanelModel;
+    if (sayfaPaneli is null && User.Identity?.IsAuthenticated == true &&
+        Context.Items[CapYandal.Web.Security.HesapOturumu.ErisimAnahtari] is CapYandal.Web.Security.HesapErisimDurumu { OgrenciKurulumuGerekli: false })
+    {
+        var ogrenci = User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Ogrenci);
+        var koordinator = User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator);
+        var bolumler = ogrenci ? new[] { "Ders Kaydı ve Evrak İşlemleri", "Onay Takip", "Sohbet", "Dokümanlar" }
+            : (koordinator ? CapYandal.Web.Services.Paneller.PanelBolumleri.Koordinator : CapYandal.Web.Services.Paneller.PanelBolumleri.Baskan);
+        sayfaPaneli = await PanelModelleri.HazirlaAsync(User, ogrenci ? "Öğrenci" : koordinator ? "Koordinatör" : "Bölüm Başkanı", bolumler, ogrenci);
+        if (sayfaPaneli is not null) { sayfaPaneli = sayfaPaneli with { AktifBolum = "Hesap" }; }
+    }
+}
+@inject CapYandal.Web.Services.Paneller.PanelModelServisi PanelModelleri
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Çift Anadal / Yan Dal Otomasyonu</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/kapanis.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/panel-typography.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/mobile-navigation.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/transkript-onizleme.css" asp-append-version="true" />
+</head>
+<body class="application-page">
+    <a class="skip-link" href="#ana-icerik">İçeriğe geç</a>
+    @if (sayfaPaneli is not null)
+    {
+        <header class="panel-header">
+            <partial name="_PanelNavigation" model="sayfaPaneli" />
+        </header>
+    }
+    else
+    {
+    <header class="site-header">
+        <div class="page-width header-content">
+            <a class="site-brand" asp-controller="@(User.Identity?.IsAuthenticated == true ? "Hesap" : "Home")" asp-action="Index">
+                <span class="site-logo login-logo-art">
+                    <img class="login-logo-emblem" src="~/images/selcuk-logo-resmi.png" asp-append-version="true" alt="Selçuk Üniversitesi" />
+                    <img class="login-logo-wordmark" src="~/images/selcuk-logo-resmi.png" asp-append-version="true" alt="" aria-hidden="true" />
+                </span>
+                <span class="site-title">Çift Anadal / Yan Dal Otomasyonu</span>
+            </a>
+            <span class="institution">Selçuk Üniversitesi<br />Teknoloji Fakültesi Bilgisayar Mühendisliği</span>
+        </div>
+    </header>
+    @if(ViewData["HideAccountNav"] is not true) {
+    <nav class="account-nav" aria-label="Hesap işlemleri">
+        <div class="page-width account-nav-inner">
+        <strong class="account-nav-title">@ViewData["Title"]</strong>
+        <div class="account-nav-actions">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Hesap" asp-action="Index">Ana sayfa</a>
+            @if (Context.Items[CapYandal.Web.Security.HesapOturumu.ErisimAnahtari] is CapYandal.Web.Security.HesapErisimDurumu { OgrenciKurulumuGerekli: false })
+            {
+                <a asp-controller="Hesap" asp-action="ParolaDegistir">Parola değiştir</a>
+            }
+            <form asp-controller="Hesap" asp-action="Cikis" method="post">
+                <button type="submit" class="text-button">Çıkış</button>
+            </form>
+        }
+        else
+        {
+            <a asp-controller="Hesap" asp-action="Giris">Giriş ekranına dön</a>
+        }
+        </div>
+        </div>
+    </nav>
+    }
+    }
+    <main id="ana-icerik" class="@(sayfaPaneli is not null ? "panel-width" : "page-width")" tabindex="-1">
+        @if(sayfaPaneli is not null) { <h1 class="panel-page-heading">@ViewData["Title"]</h1> }
+        @RenderBody()
+    </main>
+    @if (sayfaPaneli is not null)
+    {
+        <script src="~/js/panel.js" asp-append-version="true" defer></script>
+        <script src="~/js/mobile-navigation.js" asp-append-version="true" defer></script>
+        <script src="~/js/sohbet-bildirim.js" asp-append-version="true" defer></script>
+        @if(sayfaPaneli.OgrenciMi) { <script src="~/js/ogrenci-durum.js" asp-append-version="true" data-durum-url="@Url.Action("OgrenciDurumu", "Panel")" defer></script> }
+    }
+    @if(sayfaPaneli is not null) {
+        <aside id="transcript-preview" class="transcript-preview" aria-labelledby="transcript-preview-title" hidden>
+            <header><strong id="transcript-preview-title">Transkript</strong><button type="button" class="transcript-close" aria-label="Transkript panelini kapat">Kapat</button></header>
+            <p>PDF görünmüyorsa <a class="transcript-new-tab" target="_blank" rel="noopener">yeni sekmede aç</a>.</p>
+            <iframe title="Transkript PDF önizlemesi" referrerpolicy="no-referrer"></iframe>
+        </aside>
+        <script src="~/js/transkript-onizleme.js" asp-append-version="true" defer></script>
+    }
+    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/parola-alani.js" asp-append-version="true" defer></script>
+</body>
+</html>

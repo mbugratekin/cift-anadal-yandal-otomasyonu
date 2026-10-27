@@ -1,0 +1,14 @@
+<details open class="course-list-block">
+    <summary>Katalogda bulunmayan ders talebi</summary>
+    <p>Talep koordinatörle kendi sohbetinize gönderilir. Katalog veya ders seçimi otomatik oluşturulmaz.</p>
+    <form asp-controller="DersTalebi" asp-action="Gonder" method="post" class="ders-talebi-form" data-done-url="@Url.Action("Sohbet", "Panel")">
+        <input type="hidden" name="IstekId" value="@Guid.NewGuid()" />
+        <div class="registration-row">
+            <label>Ders kodu<input name="DersKodu" maxlength="50" required /></label>
+            <label>Ders adı<input name="DersAdi" maxlength="250" required /></label>
+        </div>
+        <label>Açıklama<textarea name="Aciklama" rows="1" maxlength="1000" class="auto-grow-field"></textarea></label>
+        <button type="submit" class="text-button">Talebi gönder</button>
+        <p role="alert"></p>
+    </form>
+</details>

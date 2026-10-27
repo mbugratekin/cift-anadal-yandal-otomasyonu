@@ -1,0 +1,49 @@
+@model CapYandal.Web.Models.PanelModel
+@using CapYandal.Web.Security
+@{ ViewData["Title"] = "Hesap Yönetimi"; }
+<section class="panel-content" aria-labelledby="hesap-basligi">
+    <h1 id="hesap-basligi" class="visually-hidden">Hesap Yönetimi</h1>
+    <form class="personel-hesap-form staff-create-form" asp-controller="PersonelHesap" asp-action="Hazirla" method="post">
+        <div class="personel-devir-fields">
+            <label>Ad<input name="Ad" maxlength="128" required autocomplete="off" /></label>
+            <label>Soyad<input name="Soyad" maxlength="128" required autocomplete="off" /></label>
+            <label>Kullanıcı adı<input name="KullaniciAdi" maxlength="256" required autocomplete="off" /></label>
+            <label>Kurumsal e-posta<input name="KurumsalEposta" type="email" maxlength="256" required autocomplete="off" /></label>
+            <label>Görev<select name="Rol" required><option value="">Görevi seçin</option><option value="@UygulamaRolleri.Koordinator">Koordinatör</option><option value="@UygulamaRolleri.BolumBaskani">Bölüm Başkanı</option></select></label>
+            <button type="submit" class="primary-button">Hesap ekle</button>
+        </div>
+        <p class="personel-devir-message" role="status" aria-live="polite"></p>
+    </form>
+    <h2>Personel hesapları</h2>
+    <div class="profile-table-scroll"><table class="program-information">
+        <thead><tr><th scope="col">Adı Soyadı</th><th scope="col">Görev</th><th scope="col">İşlem</th></tr></thead>
+        <tbody>
+        @foreach (var person in Model.PersonelGorevlileri)
+        {
+            <tr>
+                <td>@person.AdSoyad</td><td>@(person.Rol == UygulamaRolleri.Koordinator ? "Koordinatör" : "Bölüm Başkanı")</td>
+                <td>
+                    @if (!person.GorevliMi)
+                    {
+                        <form class="personel-hesap-form" asp-controller="PersonelHesap" asp-action="@(person.HazirMi ? "GorevAta" : "Davet")" method="post">
+                            @if (person.HazirMi)
+                            {
+                                <input type="hidden" name="KullaniciId" value="@person.Id" /><input type="hidden" name="Rol" value="@person.Rol" />
+                            }
+                            else
+                            {
+                                <input type="hidden" name="id" value="@person.Id" />
+                            }
+                            @if(!person.HazirMi) { <span>Parola kurulumu bekleniyor. </span> }
+                            <button type="submit" class="text-button">@(person.HazirMi ? "Görevi devret" : "Daveti yeniden gönder")</button>
+                            <p class="personel-devir-message" role="status" aria-live="polite"></p>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (Model.PersonelGorevlileri.Count == 0) { <tr><td colspan="3">Personel hesabı yok.</td></tr> }
+        </tbody>
+    </table></div>
+    <script src="~/js/personel-hesap.js" asp-append-version="true" defer></script>
+</section>

@@ -1,0 +1,24 @@
+@model string
+@{
+    var inputId = "evrak-dosyasi-" + Model;
+    var statusId = inputId + "-durum";
+    var defaultText = "";
+}
+<div class="evrak-file-picker" data-evrak-file-picker data-default-text="@defaultText">
+    <div class="general-document-picker" data-evrak-drop-zone>
+        <label class="general-document-file" for="@inputId">
+            <span aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h5l2 2h8A1.5 1.5 0 0 1 21 9.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" />
+                    <path d="M12 11v6m-2-2 2 2 2-2" />
+                </svg>
+            </span>
+            <input id="@inputId" name="file" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="PDF veya Word dosyası seçin" aria-describedby="@statusId" data-evrak-file-input />
+        </label>
+    </div>
+        <div class="general-document-filename" aria-live="polite">
+            <span id="@statusId" data-evrak-file-name>@defaultText</span>
+            <button type="button" class="text-button" data-evrak-file-remove hidden>Dosyayı kaldır</button>
+        </div>
+    <p class="document-form-message" role="status" aria-live="polite" data-evrak-file-message></p>
+</div>

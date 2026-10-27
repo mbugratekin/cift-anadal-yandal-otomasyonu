@@ -1,0 +1,9 @@
+@model IReadOnlyList<CapYandal.Web.Services.Belgeler.TranskriptBaglantisi>
+@using CapYandal.Web.Data.Entities
+<div class="transcript-links">
+@foreach(var belge in Model) {
+    var ad=$"{(belge.Tur==KisiselBelgeTuru.AnaDalTranskripti?"Ana dal":"ÇAP / Yan dal")} transkripti | {belge.Donem}";
+    <a href="@Url.Action(belge.Pdf?"Goruntule":"Indir","KisiselBelge",new{id=belge.Id})"
+       data-transcript-preview="@(belge.Pdf?"true":null)" target="_blank" rel="noopener" class="transcript-open">@ad</a>
+}
+</div>

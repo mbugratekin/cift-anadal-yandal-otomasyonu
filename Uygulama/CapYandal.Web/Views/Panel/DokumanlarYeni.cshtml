@@ -1,0 +1,144 @@
+@model CapYandal.Web.Models.PanelModel
+@using System.Globalization
+@{ ViewData["Title"] = "Dokümanlar"; }
+<section class="panel-content documents-workspace documents-new" aria-labelledby="dokuman-basligi">
+    <h1 id="dokuman-basligi" class="visually-hidden">Dokümanlar</h1>
+    @if (TempData["GenelBelgeSonucu"] is string belgeMesaji) { <p role="status">@belgeMesaji</p> }
+    <link rel="stylesheet" href="~/css/dokumanlar-yeni.css" asp-append-version="true" />
+    <section class="document-list" aria-label="Belgeler">
+    @foreach (var category in new[] { "Akademik takvim", "Kurallar ve yönergeler", "Ders kayıt formları" })
+    {
+        var kinds = category == "Ders kayıt formları" ? new[] { category, "Ders kayıt rehberi", "Protokoller" } : new[] { category };
+        var all = Model.GenelBelgeler.Where(b => kinds.Contains(b.Tur)).ToArray();
+        var current = all.Where(b => !b.Arsivde).ToArray();
+        var previous = all.SelectMany(b => b.Gecmis).Where(b => !b.Arsivde).OrderByDescending(b => b.GuncellemeAni).ToArray();
+        <section class="new-document-category">
+            <div class="new-document-heading">
+                <h2>@(category == "Ders kayıt formları" ? "Ders kayıt belgeleri" : category)</h2>
+                @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+                {
+                    <form class="new-document-upload" asp-controller="GenelBelgeYukleme" asp-action="Yukle" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="tur" value="@category" />
+                        <input type="hidden" name="surum" disabled />
+                        <label class="new-upload-label">Belge yükle<input type="file" name="file" accept=".pdf,.docx" required aria-label="Belge yükle" /></label>
+                        <div class="new-upload-options" hidden>
+                            <label>Kayıt
+                                <select name="genelBelgeId" aria-label="Yeni belge veya mevcut belgenin yerine yükleme">
+                                    <option value="" data-tur="@category">Yeni belge olarak ekle</option>
+                                    @foreach(var item in current) { <option value="@item.Id" data-surum="@item.Surum" data-tur="@item.Tur">@item.DosyaAdi yerine yükle</option> }
+                                </select>
+                            </label>
+                            <span class="selected-file"></span>
+                            <button type="submit">Yükle</button>
+                            <p role="status" class="new-upload-message"></p>
+                        </div>
+                    </form>
+                }
+            </div>
+            <div class="new-document-body">
+                @foreach(var item in current) { <partial name="_GenelBelgeYeniSatir" model="item" /> }
+                @if(current.Length == 0) { <p>Henüz belge yüklenmedi.</p> }
+                @if(previous.Length > 0)
+                {
+                    <section class="new-document-past">
+                        <h3>Geçmiş belgeler</h3>
+                        <div class="new-history-scroll" tabindex="0" aria-label="Geçmiş belgeler">
+                            @foreach(var item in previous)
+                            { <partial name="_GenelBelgeYeniSatir" model="item" /> }
+                        </div>
+                    </section>
+                }
+            </div>
+        </section>
+    }
+    </section>
+    @if(!User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Ogrenci))
+    {
+        var archived = Model.GenelBelgeler.SelectMany(b => new[] { b }.Concat(b.Gecmis)).Where(b => b.Arsivde).OrderByDescending(b => b.GuncellemeAni).ToArray();
+        <details class="new-document-archive">
+            <summary>Arşivlenen Belgeler</summary>
+            <div class="new-archive-scroll" tabindex="0" aria-label="Arşivlenen Belgeler">
+                @foreach(var item in archived) { <partial name="_GenelBelgeYeniSatir" model="item" /> }
+                @if(archived.Length == 0) { <p>Arşivlenmiş belge yok.</p> }
+            </div>
+        </details>
+    }
+    @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator) || User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.BolumBaskani))
+    {
+        <section class="panel-workspace student-programs" aria-label="Ders listesi şablonları">
+            <h2 id="ders-listeleri">Ders Katalogları</h2>
+            @foreach (var grup in Model.Sablonlar.GroupBy(s => new { s.Program, s.AnaDal }))
+            {
+                <section class="template-program-group">
+                    <h3 class="new-program-title">@(grup.Key.Program == "Yan Dal" ? "Yan Dal" : $"{grup.Key.AnaDal} — ÇAP")</h3>
+                @foreach (var sablon in grup.OrderBy(s => s.MufredatNo))
+                {
+                <details id="mufredat-@sablon.Id" class="template-list" data-template-id="@sablon.Id" data-curriculum-active="@(sablon.EtkinMi ? "true" : "false")" hidden="@(!sablon.EtkinMi)">
+                                        <summary>
+                        <span class="template-heading-text">@MufredatGorunumu.Ad(sablon.MufredatAdi)</span>
+                    </summary>
+                    @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+                    {
+                        <form id="sablon-form-@sablon.Id" class="template-form" asp-controller="Sablon" asp-action="Kaydet" method="post">
+                            <input type="hidden" name="SablonId" value="@sablon.Id" /><input type="hidden" name="Surum" value="@sablon.Surum" />
+                            <div class="profile-table-scroll">
+                                <table class="program-information">
+                                    <thead><tr><th scope="col">Ders Kodu / Tür</th><th scope="col">Ders Adı</th><th scope="col">Kredi</th><th scope="col">AKTS</th><th scope="col">Yarıyıl</th></tr></thead>
+                                    <tbody class="template-rows">
+                                    @for (var i = 0; i < sablon.Dersler.Count; i++)
+                                    {
+                                        var ders = sablon.Dersler[i];
+                                        <tr class="template-row" data-semester-band="@(ders.MufredatYariyili % 2 == 0 ? "even" : "odd")">
+                                            <td><input type="hidden" data-field="DersId" name="Dersler[@i].DersId" value="@ders.DersId" /><input type="hidden" data-field="Cikar" name="Dersler[@i].Cikar" value="false" />
+                                                <div class="course-code-kind"><input class="course-code-cell" data-field="Kod" name="Dersler[@i].Kod" value="@ders.Kod" maxlength="50" required aria-label="Ders kodu" />
+                                                <select data-field="Tur" name="Dersler[@i].Tur" required aria-label="Ders türü">
+                                                    <option value="3" selected="@(ders.Tur == 3)">Zorunlu</option><option value="1" selected="@(ders.Tur == 1)">Teknik seçmeli</option><option value="2" selected="@(ders.Tur == 2)">Sosyal seçmeli</option>
+                                                </select></div></td>
+                                            <td><div class="template-course-name"><input data-field="Ad" name="Dersler[@i].Ad" value="@ders.Ad" maxlength="250" required aria-label="Ders adı" /><button type="button" class="text-button template-remove" aria-label="Dersi şablondan çıkar" title="Dersi çıkar">−</button></div></td>
+                                            <td><input data-field="Kredi" name="Dersler[@i].Kredi" value="@ders.Kredi?.ToString(CultureInfo.InvariantCulture)" inputmode="decimal" maxlength="12" aria-label="Kredi" /></td>
+                                            <td><input data-field="Akts" name="Dersler[@i].Akts" value="@ders.Akts.ToString(CultureInfo.InvariantCulture)" inputmode="decimal" maxlength="12" required aria-label="AKTS" /></td>
+                                            <td><input data-field="MufredatYariyili" name="Dersler[@i].MufredatYariyili" value="@ders.MufredatYariyili" type="number" min="1" max="8" step="1" required aria-label="Dersin plandaki yarıyılı" /></td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="template-row-actions"><button type="button" class="text-button template-add">Ders Ekle</button></div>
+                            <div class="template-actions"><button type="submit" class="text-button template-save">Kaydet</button><button type="button" class="text-button template-reset">Vazgeç</button></div>
+                            <p class="template-message" role="status"></p>
+                            <template class="template-new-row">
+                                <tr class="template-row" data-new="true">
+                                    <td><input type="hidden" data-field="DersId" value="" /><input type="hidden" data-field="Cikar" value="false" /><div class="course-code-kind"><input class="course-code-cell" data-field="Kod" maxlength="50" required aria-label="Yeni ders kodu" /><select data-field="Tur" required aria-label="Yeni ders türü"><option value="" disabled selected>Seçin</option><option value="3">Zorunlu</option><option value="1">Teknik seçmeli</option><option value="2">Sosyal seçmeli</option></select></div></td>
+                                    <td><div class="template-course-name"><input data-field="Ad" maxlength="250" required aria-label="Yeni ders adı" /><button type="button" class="text-button template-remove" aria-label="Yeni dersi çıkar" title="Dersi çıkar">−</button></div>
+                                    </td>
+                                    <td><input data-field="Kredi" inputmode="decimal" maxlength="12" aria-label="Yeni ders kredisi" /></td>
+                                    <td><input data-field="Akts" inputmode="decimal" maxlength="12" required aria-label="Yeni ders AKTS" /></td>
+                                    <td><input data-field="MufredatYariyili" type="number" min="1" max="8" step="1" required aria-label="Yeni dersin plandaki yarıyılı" /></td>
+                                </tr>
+                            </template>
+                        </form>
+                    }
+                    else
+                    {
+                    <div class="profile-table-scroll">
+                        <table class="program-information">
+                            <thead><tr><th scope="col">Ders Kodu / Tür</th><th scope="col">Ders Adı</th><th scope="col">Kredi</th><th scope="col">AKTS</th><th scope="col">Yarıyıl</th></tr></thead>
+                            <tbody>
+                            @foreach (var ders in sablon.Dersler) { <tr data-semester-band="@(ders.MufredatYariyili % 2 == 0 ? "even" : "odd")"><td class="course-code-cell">@ders.Kod <span>@(ders.Tur == 3 ? "Zorunlu" : ders.Tur == 1 ? "Teknik seçmeli" : "Sosyal seçmeli")</span></td><td>@ders.Ad</td><td>@ders.Kredi?.ToString(CultureInfo.CurrentCulture)</td><td>@ders.Akts</td><td>@ders.MufredatYariyili</td></tr> }
+                            @if (sablon.Dersler.Count == 0) { <tr><td colspan="5">Henüz etkin ders yok.</td></tr> }
+                            </tbody>
+                        </table>
+                    </div>
+                    }
+                </details>
+                }
+                </section>
+            }
+            @if (Model.Sablonlar.Count == 0) { <p class="muted">Henüz etkin şablon yok.</p> }
+        </section>
+    }
+</section>
+@section Scripts {
+    <script src="~/js/templates.js" asp-append-version="true" defer></script>
+    <script src="~/js/dokumanlar-yeni.js" asp-append-version="true" defer></script>
+}

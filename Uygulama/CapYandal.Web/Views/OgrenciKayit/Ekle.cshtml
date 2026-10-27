@@ -1,0 +1,22 @@
+@model CapYandal.Web.Models.OgrenciKayitModel
+@{ ViewData["Title"] = "Öğrenci ekle"; }
+<section class="account-box registration-box" aria-label="Öğrenci ekleme formu">
+    <form asp-action="Ekle" method="post" class="registration-form">
+        @if(TempData["OgrenciKayitSonucu"] is string result) { <p class="success-notice" role="status">@result</p> }
+        <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+        <div class="registration-grid">
+            <div class="form-field"><label asp-for="OgrenciNo"></label><input class="student-number-cell compact-value" asp-for="OgrenciNo" inputmode="numeric" maxlength="9" autocomplete="off" /><span asp-validation-for="OgrenciNo"></span></div>
+            <div class="form-field"><label asp-for="Ad"></label><input asp-for="Ad" maxlength="100" /><span asp-validation-for="Ad"></span></div>
+            <div class="form-field"><label asp-for="Soyad"></label><input asp-for="Soyad" maxlength="100" /><span asp-validation-for="Soyad"></span></div>
+            <div class="form-field"><label asp-for="KaynakAnaDal"></label><select asp-for="KaynakAnaDal"><option value="">Ana dal seçin</option>@foreach(var source in (IReadOnlyList<CapYandal.Web.Data.Entities.KaynakAnaDal>)ViewBag.KaynakAnaDallar) { <option value="@source.Ad" data-type="@((int)source.Tur)">@source.Ad</option> }</select><span asp-validation-for="KaynakAnaDal"></span></div>
+            <div class="form-field"><label asp-for="Tur"></label><select asp-for="Tur"><option value="">Seçin</option><option value="1">Çift Anadal</option><option value="2">Yan Dal</option></select><span asp-validation-for="Tur"></span></div>
+            <div class="form-field"><label asp-for="KabulAkademikYilBaslangici"></label><input class="compact-value" asp-for="KabulAkademikYilBaslangici" type="number" min="@ViewBag.EnErkenKabulYili" max="@(DateTime.UtcNow.Year+1)" placeholder="2026" /><span asp-validation-for="KabulAkademikYilBaslangici"></span></div>
+            <div class="form-field"><label asp-for="KabulYariyili"></label><select asp-for="KabulYariyili"><option value="">Seçin</option><option value="1">Güz</option><option value="2">Bahar</option></select><span asp-validation-for="KabulYariyili"></span></div>
+        </div>
+        <div class="registration-actions">
+            <a asp-controller="Panel" asp-action="Ogrenciler" class="secondary-button">Listeye dön</a>
+            <button type="submit" class="primary-button compact-action">Öğrenciyi ekle</button>
+        </div>
+    </form>
+</section>
+@section Scripts { <script src="~/js/mufredat-secimi.js" asp-append-version="true" defer></script> }

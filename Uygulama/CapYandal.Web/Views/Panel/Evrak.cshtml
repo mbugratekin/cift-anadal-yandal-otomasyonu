@@ -1,0 +1,38 @@
+@model CapYandal.Web.Models.PanelModel
+@{ var panel=Model.EvrakPaneli!; ViewData["Title"]="Öğrenci Evrakları"; }
+<section class="panel-content student-programs archive-workspace" aria-label="Öğrenci Evrakları">
+    <div class="archive-toolbar">
+    @if(!Model.OgrenciMi && panel.Baglamlar.Count > 1) {
+        <label class="archive-search-label">Öğrenci ara<input type="search" class="archive-search" placeholder="Öğrenci no veya ad soyad" autocomplete="off" maxlength="128" /></label>
+    }
+    </div>
+    @if(!panel.IslemDonemiBelirli) {<p>İşlem dönemi henüz belirlenmemiştir. Yeni evrak gönderilemez.</p>}
+    @if((Context.Request.Query.ContainsKey("yil") || Context.Request.Query.ContainsKey("yariyil") || Context.Request.Query.ContainsKey("donem")) && panel.Baglamlar.All(b => b.Dosyalar.Count == 0 && b.Istekler.Count == 0)) { <p role="status">Seçilen dönem için belge veya belge isteği bulunamadı.</p> }
+    <div class="archive-layout">
+    @if(!Model.OgrenciMi && panel.Baglamlar.Count > 1)
+    {
+        <aside class="archive-roster" aria-label="Öğrenciler">
+            <div class="profile-table-scroll"><table class="program-information">
+                <thead><tr><th scope="col">Öğrenci</th></tr></thead>
+                <tbody>@foreach(var context in panel.Baglamlar) {
+                    <tr><td><button type="button" class="archive-student text-button" aria-controls="arsiv-@context.ProgramId" aria-expanded="@(context == panel.Baglamlar[0] ? "true" : "false")">@context.Ogrenci <span>@context.OgrenciNo</span></button></td></tr>
+                }</tbody>
+            </table></div>
+            <p class="archive-search-message" role="status"></p>
+        </aside>
+    }
+    <div class="archive-detail">
+        @foreach(var context in panel.Baglamlar) {
+            <div id="arsiv-@context.ProgramId" class="archive-student-content" hidden="@(context != panel.Baglamlar[0])"><h2 class="archive-student-heading">@context.Ogrenci @context.OgrenciNo</h2><partial name="_EvrakPaneli" model="context" />
+                @foreach(var history in context.GecmisDonemler) { <partial name="_EvrakPaneli" model="history" /> }
+            </div>
+        }
+        @if(panel.Baglamlar.Count == 0) { <p>Öğrenci kaydı bulunamadı.</p> }
+    </div>
+    </div>
+</section>
+@section Scripts {
+    <script src="~/js/evrak.js" asp-append-version="true" defer></script>
+    <script src="~/js/belge-inceleme.js" asp-append-version="true" defer></script>
+    <script src="~/js/belge-arsivi.js" asp-append-version="true" defer></script>
+}

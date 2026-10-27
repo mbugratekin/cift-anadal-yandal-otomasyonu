@@ -1,0 +1,14 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "İşlem tamamlanamadı";
+}
+
+<section class="intro" aria-labelledby="hata-basligi">
+    <h1 id="hata-basligi">İşlem tamamlanamadı</h1>
+    <p>Sayfayı yeniden açmayı deneyin. Sorun sürerse aşağıdaki işlem kimliğiyle ilgili kişiye bildirin.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p>İşlem kimliği: <code>@Model.RequestId</code></p>
+    }
+    <a asp-controller="Home" asp-action="Index">Başlangıç sayfasına dön</a>
+</section>

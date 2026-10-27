@@ -1,0 +1,20 @@
+@model CapYandal.Web.Models.PanelModel
+@{ var write = User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator); }
+<section class="common-curricula" aria-label="Ortak müfredat sürümleri">
+    <h2>Müfredatlar</h2>
+    <div class="common-curricula-heading">@if(write) { <button type="button" class="primary-button common-curriculum-open" aria-expanded="false" aria-controls="common-curriculum-create">Müfredat ekle</button> }</div>
+    @if(write) {
+        <form id="common-curriculum-create" class="common-curriculum-form common-curriculum-create" asp-controller="Mufredat" asp-action="Ekle" method="post" hidden>
+            <label>Müfredat adı<input name="Ad" maxlength="100" required /></label>
+            <label>Başlangıç yılı<input name="BaslangicYili" type="number" min="2" max="9998" required /></label>
+            <button type="submit" class="primary-button">Ekle</button><button type="button" class="text-button common-curriculum-cancel">Vazgeç</button>
+        </form>
+    }
+    <label class="common-passive-toggle"><input type="checkbox" class="common-show-passive" /> Pasif müfredatları göster</label>
+    <div class="profile-table-scroll"><table class="program-information curriculum-summary-table"><thead><tr><th>Müfredat</th><th>Başlangıç yılı</th>@if(write) { <th>İşlem</th> }</tr></thead><tbody class="common-curriculum-list">@foreach(var item in Model.Mufredatlar) {
+        <tr data-curriculum-active="@(item.EtkinMi ? "true" : "false")" hidden="@(!item.EtkinMi)"><td>@item.Ad</td><td>@(item.BaslangicYili?.ToString() ?? "—")</td>
+        @if(write) { <td><form class="common-curriculum-form" asp-controller="Mufredat" asp-action="Durum" method="post"><input type="hidden" name="Id" value="@item.Id" /><input type="hidden" name="Surum" value="@item.Surum" /><input type="hidden" name="EtkinMi" value="@(item.EtkinMi ? "false" : "true")" /><button type="submit" class="text-button common-curriculum-status">@(item.EtkinMi ? "Pasife al" : "Etkinleştir")</button></form></td> }
+        </tr>
+    }</tbody></table></div>
+    <p class="common-curriculum-message" role="alert"></p>
+</section>

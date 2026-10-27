@@ -1,0 +1,41 @@
+@model CapYandal.Web.Models.PanelModel
+@{ ViewData["Title"] = "İşlem Geçmişi"; var history = Model.DenetimGecmisi!; }
+<section class="panel-content audit-workspace" aria-labelledby="gecmis-basligi">
+    <h1 id="gecmis-basligi">Geçmiş İşlem Kayıtları</h1>
+    <div class="profile-table-scroll"><table class="program-information audit-table">
+        <thead><tr><th scope="col">Zaman</th><th scope="col">İşlemi yapan</th><th scope="col">İşlem ve değişiklik</th></tr></thead>
+        <tbody>
+        @foreach (var row in history.Kayitlar)
+        {
+            var yerelZaman = TimeZoneInfo.ConvertTime(row.Zaman, TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul"));
+            <tr>
+                <td><time class="audit-time" datetime="@row.Zaman.ToString("O")"><span>@yerelZaman.ToString("dd.MM.yyyy")</span><span>@yerelZaman.ToString("HH:mm")</span></time></td>
+                <td class="audit-actor"><strong>@row.Yapan</strong><span>@row.Rol</span></td>
+                <td class="audit-record">
+                    <strong>@row.Hedef</strong><span>@row.Islem</span>
+                    @if (row.Degisiklikler.Count > 0)
+                    {
+                        <dl class="audit-changes">
+                        @foreach (var change in row.Degisiklikler)
+                        { <div><dt>@change.Alan</dt><dd><span>@change.Onceki</span><span aria-hidden="true">→</span><strong>@change.Sonraki</strong></dd></div> }
+                        </dl>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(row.Gerekce)) { <p class="audit-reason"><strong>Gerekçe:</strong> @row.Gerekce</p> }
+                </td>
+            </tr>
+        }
+        @if (history.Kayitlar.Count == 0) { <tr><td colspan="3">İşlem kaydı yok.</td></tr> }
+        </tbody>
+    </table></div>
+    <nav class="audit-pagination" aria-label="İşlem geçmişi sayfaları">
+        @if (history.Sayfa > 0) { <a asp-action="Index" asp-route-sayfa="@(history.Sayfa - 1)" aria-label="Önceki sayfa" title="Önceki sayfa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></a> }
+        else { <span class="audit-page-disabled" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg></span> }
+        <form method="get" asp-action="Index" class="audit-page-jump">
+            <label for="audit-page" class="visually-hidden">Sayfa numarası; yazıp Enter'a basın</label>
+            <input id="audit-page" name="sayfaNo" type="number" min="1" max="@history.ToplamSayfa" value="@(history.Sayfa + 1)" required title="Sayfa numarasını yazıp Enter'a basın" />
+            <span class="audit-page-total">/ @history.ToplamSayfa</span>
+        </form>
+        @if (history.SonrakiVar) { <a asp-action="Index" asp-route-sayfa="@(history.Sayfa + 1)" aria-label="Sonraki sayfa" title="Sonraki sayfa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></a> }
+        else { <span class="audit-page-disabled" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></svg></span> }
+    </nav>
+</section>

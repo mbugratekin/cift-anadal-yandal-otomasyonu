@@ -1,0 +1,21 @@
+@model CapYandal.Web.Models.IlkParolaModel
+@{ ViewData["Title"] = "Parolamı oluştur"; ViewData["HideAccountNav"] = true; }
+<section class="account-box" aria-labelledby="ilk-parola-basligi">
+    <h1 id="ilk-parola-basligi">Parolamı oluştur</h1>
+    <p id="parola-kurallari">Şifreniz 8–20 karakter arasında olmalı; en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter (!, ?, %, ...) içermelidir.</p>
+    <p>Parolanızı oluşturduğunuzda öğrenci e-posta adresiniz doğrulanır.</p>
+    <form asp-action="ParolaOlustur" method="post">
+        <partial name="_TekFormHatasi" />
+        <input asp-for="UserId" type="hidden" /><input asp-for="DavetId" type="hidden" /><input asp-for="Token" type="hidden" />
+        <div class="form-field"><label asp-for="YeniParola"></label><input asp-for="YeniParola" autocomplete="new-password" minlength="8" maxlength="20" aria-describedby="parola-kurallari" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).*" title="8–20 karakter; en az bir büyük harf, küçük harf, rakam ve özel karakter kullanın." /></div>
+        <div class="form-field"><label asp-for="YeniParolaTekrar"></label><input asp-for="YeniParolaTekrar" autocomplete="new-password" minlength="8" maxlength="20" aria-describedby="parola-kurallari" /></div>
+        <label class="password-visibility" hidden data-password-visibility>
+            <input type="checkbox" aria-controls="YeniParola YeniParolaTekrar" />
+            <span>Şifreyi göster</span>
+        </label>
+        <button type="submit" class="primary-button">Parolamı oluştur</button>
+    </form>
+</section>
+@section Scripts {
+    <script src="~/js/password-visibility.js" asp-append-version="true" defer></script>
+}

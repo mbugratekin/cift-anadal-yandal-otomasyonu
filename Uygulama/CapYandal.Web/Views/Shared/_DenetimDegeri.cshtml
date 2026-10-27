@@ -1,0 +1,16 @@
+@model string
+@if (string.IsNullOrWhiteSpace(Model) || Model == "null")
+{
+    <span class="audit-empty">—</span>
+}
+else if (Model.Length <= 100 && !Model.Contains('\n') && !Model.Contains('\r') && !Model.TrimStart().StartsWith('{') && !Model.TrimStart().StartsWith('['))
+{
+    <span>@Model</span>
+}
+else
+{
+    <details class="audit-value">
+        <summary>Ayrıntıyı göster</summary>
+        <code>@Model</code>
+    </details>
+}

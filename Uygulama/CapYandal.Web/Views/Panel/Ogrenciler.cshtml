@@ -1,0 +1,44 @@
+@model CapYandal.Web.Models.PanelModel
+@{ ViewData["Title"] = "Öğrenciler"; }
+<section class="panel-content" aria-labelledby="ogrenciler-basligi">
+    <h1 id="ogrenciler-basligi" class="visually-hidden">Öğrenciler</h1>
+    @if (User.IsInRole(CapYandal.Web.Security.UygulamaRolleri.Koordinator))
+    {
+        <p><a asp-controller="OgrenciKayit" asp-action="Ekle" class="primary-button">Öğrenci ekle</a></p>
+    }
+    @if (TempData["OgrenciKayitSonucu"] is string message)
+    {
+        <p role="status">@message</p>
+    }
+    <form method="get" asp-controller="Panel" asp-action="Ogrenciler" class="student-filters" role="search" aria-label="Öğrenci ve program arama">
+        <div class="student-search-field"><label for="student-search">Öğrenci No veya Adı Soyadı</label><input id="student-search" name="arama" value="@Model.Arama" maxlength="100" type="search" /></div>
+        <div><label for="student-program-type">Program</label><select id="student-program-type" name="tur">
+            <option value="">Tümü</option><option value="Cap" selected="@(Model.ProgramTuru == "Cap")">Çift Anadal</option><option value="YanDal" selected="@(Model.ProgramTuru == "YanDal")">Yan Dal</option>
+        </select></div>
+        <div><label for="student-program-status">Durum</label><select id="student-program-status" name="durum">
+            <option value="">Tümü</option><option value="Aktif" selected="@(Model.ProgramDurumu == "Aktif")">Aktif</option><option value="Pasif" selected="@(Model.ProgramDurumu == "Pasif")">Pasif</option>
+        </select></div>
+        <button type="submit" class="primary-button">Ara</button>
+        <a asp-controller="Panel" asp-action="Ogrenciler">Filtreleri Temizle</a>
+    </form>
+    <section class="panel-workspace student-programs" aria-labelledby="ogrenci-listesi-basligi">
+        <h2 id="ogrenci-listesi-basligi">Öğrenci ve Program Listesi</h2>
+        <div class="profile-table-scroll">
+            <table class="program-information">
+                <caption class="visually-hidden">Öğrenci bağlantısından kişisel bilgiler ve GANO geçmişi açılır.</caption>
+                <thead><tr><th scope="col">Öğrenci No</th><th scope="col">Adı Soyadı</th><th scope="col">Program</th></tr></thead>
+                <tbody>
+                @foreach (var student in Model.Ogrenciler)
+                {
+                    <tr class="student-detail-row @(!student.AktifMi ? "is-passive" : "")"><td class="student-number-cell"><a class="student-detail-link" asp-action="OgrenciAyrintisi" asp-route-id="@student.ProgramId">@student.OgrenciNo<span class="visually-hidden"> — öğrenci ayrıntısı</span></a></td><td>@(string.IsNullOrWhiteSpace(student.AdSoyad) ? "—" : student.AdSoyad.Trim())</td><td>@student.Tur @(!student.AktifMi ? "(Pasif)" : "")</td></tr>
+                }
+                @if (Model.Ogrenciler.Count == 0)
+                {
+                    <tr><td colspan="3">Aradığınız öğrenci kaydı bulunamadı</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
+@section Scripts { <script src="~/js/ogrenci-arama.js" asp-append-version="true" defer></script> }
